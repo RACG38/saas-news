@@ -1,0 +1,64 @@
+.registration-container {
+    max-width: 300px;
+    margin: auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.registration-container h2 {
+    color: #333;
+    text-align: center;
+}
+
+.registration-container p {
+    text-align: center;
+    color: #666;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px auto; /* Ajusta as margens para centralizar o botão */
+    border: none;
+    cursor: pointer;
+    width: 80%; /* Define uma largura menor para o botão */
+    display: block; /* Garante que o botão seja tratado como um bloco */
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.social-login-buttons button {
+    background-color: #ddd;
+    margin: 5px;
+    padding: 10px;
+    width: calc(50% - 10px);
+    display: inline-block;
+}
+
+.social-login-buttons .facebook {
+    background-color: #3B5998;
+    color: white;
+}
+
+.social-login-buttons .google {
+    background-color: #dd4b39;
+    color: white;
+}

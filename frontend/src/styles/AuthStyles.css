@@ -1,0 +1,83 @@
+/* Container principal que cobre a tela inteira */
+body {
+    display: flex;
+    justify-content: center; /* Alinhamento horizontal */
+    align-items: center;     /* Alinhamento vertical */
+    height: 100vh;           /* Altura da viewport completa */
+    background-color: #f5f5f5; /* Cor de fundo suave */
+    margin: 0; /* Remove margens padrão do body */
+}
+
+.login-container {
+    max-width: 400px;        /* Tamanho máximo da caixa */
+    padding: 20px;           /* Espaçamento interno */
+    border: 1px solid #ccc;  /* Borda da caixa */
+    border-radius: 8px;      /* Cantos arredondados */
+    background-color: #fff;  /* Cor de fundo da caixa */
+    text-align: center;      /* Alinhamento de texto centralizado */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para dar destaque */
+}
+
+.login-container h2 {
+    color: #333;
+    font-size: 24px;
+}
+
+.login-container p {
+    color: #666;
+    font-size: 16px;
+}
+
+.login-form input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+}
+
+.login-form button {
+    width: 95%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background-color: #555;
+}
+
+.social-login button {
+    width: 95%;
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+.facebook-login {
+    background-color: #3b5998;
+}
+
+.google-login {
+    background-color: #db4437;
+}
+
+.social-login button:hover {
+    opacity: 0.9;
+}
+
+.login-container a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.login-container a:hover {
+    text-decoration: underline;
+}
