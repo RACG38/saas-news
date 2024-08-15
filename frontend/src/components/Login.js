@@ -35,8 +35,11 @@ const Login = () => {
             setMessage('Login bem-sucedido!');
             setIsError(false);
 
+            // Armazene o ID do cliente no localStorage
+            localStorage.setItem('userId', data.cliente_id);
+
             // Redirecionar para a página de painel após o login bem-sucedido
-            navigate('/painel');
+            navigate('/dashboard');
 
         } catch (error) {
             setMessage(error.message);

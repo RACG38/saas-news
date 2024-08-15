@@ -21,20 +21,22 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    plano_id: selectedPlan.plan_id,
                     email: userEmail,
-                    name: selectedPlan.plan_name,
                     username: userName,
                     whatsapp: userWhatsapp,
                     password: userPassword,
                     amount: parseFloat(selectedPlan.price.replace('R$', '').replace(',', '.')) * 100, // Convertendo para centavos
-                    action: 'create_payment_intent', // Adicionando ação para distinguir o tipo de requisição
+                    action: 'create_payment_intent', // Ação para distinguir o tipo de requisição
                 }),
             });
 
-            const paymentIntentData = await paymentIntentResponse.json();
-            if (!paymentIntentResponse.ok) throw new Error(paymentIntentData.message);
+            if (!paymentIntentResponse.ok) {
+                const paymentIntentData = await paymentIntentResponse.json();
+                throw new Error(paymentIntentData.message);
+            }
 
-            const { client_secret: clientSecret } = paymentIntentData;
+            const { client_secret: clientSecret } = await paymentIntentResponse.json();
 
             // Confirmar o pagamento com o Stripe
             const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -67,8 +69,8 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
+                        plano_id: selectedPlan.plan_id,
                         email: userEmail,
-                        name: selectedPlan.plan_name,
                         username: userName,
                         whatsapp: userWhatsapp,
                         password: userPassword,
@@ -77,11 +79,13 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                     }),
                 });
 
-                const updateUserData = await updateUserResponse.json();
-                if (!updateUserResponse.ok) throw new Error(updateUserData.message);
+                if (!updateUserResponse.ok) {
+                    const updateUserData = await updateUserResponse.json();
+                    throw new Error(updateUserData.message);
+                }
 
-                console.log('Usuário criado ou atualizado:', updateUserData);
-                navigate('/painel');
+                console.log('Usuário criado ou atualizado:', await updateUserResponse.json());
+                navigate('/login');
             }
         } catch (error) {
             console.error('Erro no processo de pagamento:', error.message);

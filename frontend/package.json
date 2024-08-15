@@ -12,7 +12,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"   
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -20,7 +20,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "backend": "cd ../backend && python manage.py runserver",
-    "dev": "concurrently \"npm start\" \"npm run backend\""
+    "open-admin": "open-cli http://127.0.0.1:8000/admin/",
+    "dev": "concurrently \"npm start\" \"npm run backend\" \"npm run open-admin\""
   },
   "eslintConfig": {
     "extends": [
@@ -41,6 +42,7 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "open-cli": "^8.0.0"
   }
 }

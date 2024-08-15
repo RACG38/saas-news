@@ -1,23 +1,36 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Register from './components/Register';
 import Plans from './components/Plans';
-import Painel from './components/Painel';
 
+const isAuthenticated = () => {
+    return localStorage.getItem('authToken') !== null;
+};
 
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/plans" element={<Plans />} />
-        <Route path="/painel" element={<Painel />} /> {/* Defina a rota para o Painel */}
-      </Routes>
-    </Router>
-  );
-}
+const App = () => {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route 
+                    path="/plans" 
+                    element={
+                        isAuthenticated() ? <Plans /> : <Navigate to="/login" />
+                    }
+                />
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        isAuthenticated() ? <Dashboard /> : <Navigate to="/login" />
+                    }
+                />
+                <Route path="*" element={<Navigate to="/login" />} />
+            </Routes>
+        </Router>
+    );
+};
 
 export default App;
-
