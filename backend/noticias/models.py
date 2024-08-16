@@ -1,7 +1,7 @@
 from django.db import models
 
-#python manage.py makemigrations
-#python manage.py migrate
+# python manage.py makemigrations 
+# python manage.py migrate
 
 class Plano(models.Model):
     nome_plano = models.CharField(max_length=255)       # Coluna para o nome do plano
@@ -15,6 +15,22 @@ class Plano(models.Model):
 
     def __str__(self):
         return self.nome_plano
+    
+class DadosPagamento(models.Model):
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='dados_pagamento')
+    numero_cartao = models.CharField(max_length=16)
+    data_vencimento = models.CharField(max_length=5)  # Formato MM/YY
+    cvv = models.CharField(max_length=4)
+    cep = models.CharField(max_length=10)
+    data_renovacao_plano = models.DateField(null=True, blank=True)  
+
+    def __str__(self):
+        return f'Dados de Pagamento de {self.cliente.nome}'
+
+    class Meta:
+        verbose_name = 'Dados de Pagamento'
+        verbose_name_plural = 'Dados de Pagamento'
+
     
 class Cliente(models.Model):
     nome = models.CharField(max_length=255)

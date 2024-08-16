@@ -1,0 +1,8 @@
+1. Baixar imagens das empresas
+2. Criar link clicável para o usuário cancelar o plano, caso seja pago
+3. Criar tabela Notícias no DB e uma chave pública na tabela Acao Selecionada
+4. Criar tabela Dados Pagamento no DB para registrar: número do cartão, vencimento e cvv
+5. Landing page do site
+6. Criar ícone de feedback e melhorias do site
+7. 
+

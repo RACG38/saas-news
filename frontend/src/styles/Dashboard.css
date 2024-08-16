@@ -8,11 +8,11 @@ html, body {
 }
 
 .dashboard {
-    display: flex;
+    display: flex; 
     height: 100vh; /* Garante que o dashboard ocupe toda a altura da tela */
     background-color: #120c2b;
-    width: 100%; /* Garante que o dashboard ocupe toda a largura da tela */
     overflow: hidden; /* Impede rolagem horizontal dentro do dashboard */
+    width: 100vw;  /* Mantém o dashboard ocupando toda a largura da tela */
 }
 
 .sidebar {
@@ -26,19 +26,24 @@ html, body {
 }
 
 .sidebar p {
-    margin-bottom: 15px; /* Espaçamento entre os textos */
+    margin-bottom: 40px; /* Espaçamento entre os textos */
     font-size: 1rem; /* Tamanho do texto relativo */
 }
 
 .content {
-    flex-grow: 1; /* O conteúdo ocupará todo o espaço restante */
-    padding: 20px;
-    overflow-y: auto; /* Permite rolagem se o conteúdo for maior que a altura da tela */
-    overflow-x: hidden; /* Impede rolagem horizontal no conteúdo */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 280px);  /* Garante que o conteúdo ocupe toda a largura com margem */
+    margin-left: 30px;  /* Margem à esquerda para espaço entre sidebar e cards */
+    margin-top: 20px;
+    overflow-y: auto; /* Permite rolagem vertical */
 }
 
 .stocks-section {
     margin-top: 20px;
+    flex-grow: 1;
+    overflow-y: auto; /* Habilita a rolagem vertical na seção de stocks */
 }
 
 .stocks-grid {
@@ -47,14 +52,15 @@ html, body {
     gap: 15px;
     width: 100%; /* Garante que a grid ocupa 100% do espaço disponível */
     margin: 0 auto; /* Centraliza a grid horizontalmente */
+    padding-bottom: 20px; /* Espaço inferior para facilitar a rolagem até o final */
 }
 
 .stock-card {
-    width: 260px; /* Largura fixa */
-    height: 150px; /* Altura fixa */
-    padding: 15px;
+    width: 220px; /* Largura */
+    height: 110px; /* Altura */
+    padding: 13px;
     background-color: #f0f0f0;
-    border: 2px solid transparent;
+    border: 3px solid transparent;
     border-radius: 8px;
     text-align: center;
     cursor: pointer;
@@ -75,15 +81,16 @@ html, body {
 }
 
 .stock-card p {
-    margin: 5px 0;
+    margin: 15px 0;
     font-size: 1rem; /* Tamanho do texto relativo */
 }
 
 .sidebar-button {
     display: block;
     width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+    padding: 15px; /* Aumenta o tamanho dos botões */
+    margin-top: 15px; /* Aumenta o espaçamento superior */
+    font-size: 1.1rem; /* Aumenta o tamanho do texto dos botões */
     background-color: #4caf50;
     color: white;
     border: none;
@@ -91,9 +98,14 @@ html, body {
     text-align: center;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    text-shadow: #120c2b;
 }
 
-.sidebar-button:hover {
+.sidebar-button.save {
+    margin-top: 50px; /* Aumenta a distância do botão Salvar em relação ao botão Limpar */
+}
+
+.sidebar-button.save:hover {
     background-color: #45a049;
 }
 
@@ -108,12 +120,14 @@ html, body {
 .letter-filter {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 80px; /* Aumenta o espaço entre o menu de letras e os cards */
+    margin-top: 50px;    
+    font-size: 20px;
 }
 
 .filter-letter {
     margin: 0 5px;
-    padding: 5px;
+    padding: 10px;
     cursor: pointer;
     font-weight: bold;
     color: #ffffff;
@@ -126,4 +140,44 @@ html, body {
 .filter-letter:hover {
     background-color: #04963e;
     color: white;
+}
+
+.no-stocks-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; 
+    width: 100%;  /* Assegura que o contêiner ocupe toda a largura */
+    color: white;
+    font-size: 24px; /* Tamanho grande para a mensagem */
+    text-align: center;
+}
+
+.custom-heading {
+    color: #4caf50; /* Azul claro */
+}
+
+.logout-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: color 0.3s ease;
+}
+
+.logout-icon {
+    color: white;
+    margin-right: 10px;
+    margin-top: 250px;
+}
+
+.logout-text {
+    color: white;
+    font-size: 1.2rem; /* Ajuste conforme necessário */
+    margin-top: 250px;
+}
+
+.logout-container:hover .logout-icon,
+.logout-container:hover .logout-text {
+    color: #f44336; /* Cor ao passar o mouse por cima (vermelho) */
 }

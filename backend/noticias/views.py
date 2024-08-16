@@ -176,7 +176,6 @@ class DashboardView(APIView):
         print(f"ID do cliente recebido: {cliente_id}")
         cliente = get_object_or_404(Cliente, id=cliente_id)
 
-        # Buscar e processar dados do cliente e ações selecionadas
         dados_dashboard = {
             'cliente': {
                 'nome': cliente.nome,
@@ -188,20 +187,18 @@ class DashboardView(APIView):
                     'email_opt': cliente.plano.email,
                     'whatsapp_opt': cliente.plano.whatsapp,
                     'temporeal': cliente.plano.tempo_real,
-
                 },
                 'data_ultimo_pagamento': cliente.data_ultimo_pagamento,
             },
-            'acoes_selecionadas': list(cliente.acoes_selecionadas.values('simbolo')),
+            'acoes_selecionadas': list(cliente.acoes_selecionadas.values('simbolo', 'nome')),
             'acoes_disponiveis': [],  # Placeholder para as ações obtidas de uma fonte externa
         }
 
-        # Fazer a requisição ao site externo e obter a página HTML
         try:
             response = requests.get('https://www.dadosdemercado.com.br/acoes')
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'html.parser')
-            tabela = soup.find('table')  # Ajuste conforme necessário
+            tabela = soup.find('table')
             acoes_disponiveis = []
 
             for row in tabela.find_all('tr')[1:]:
@@ -219,27 +216,19 @@ class DashboardView(APIView):
         return Response(dados_dashboard)
 
     def post(self, request):
-        # Lógica de salvamento das ações selecionadas
-        cliente_id = request.data.get('cliente_id')
+        cliente_id = request.data.get('userId')
         cliente = get_object_or_404(Cliente, id=cliente_id)
         acoes = request.data.get('selectedStocks', [])
 
-        if len(cliente_id) == 0:
+        # Apagar as ações não selecionadas antes de atualizar
+        AcaoSelecionada.objects.filter(cliente=cliente).exclude(simbolo__in=[acao['simbolo'] for acao in acoes]).delete()
 
-            for acao_data in acoes:
-                AcaoSelecionada.objects.create(
-                    cliente=cliente,
-                    simbolo=acao_data['simbolo'],
-                    defaults={'nome': acao_data['nome']}
+        for acao_data in acoes:
+            # Tentar atualizar se a ação já existe, caso contrário, criar uma nova entrada
+            AcaoSelecionada.objects.update_or_create(
+                cliente=cliente,
+                simbolo=acao_data['simbolo'],
+                defaults={'nome': acao_data['nome']}
             )
 
-        else:
-
-            for acao_data in acoes:
-                AcaoSelecionada.objects.update(
-                    cliente=cliente,
-                    simbolo=acao_data['simbolo'],
-                    defaults={'nome': acao_data['nome']}
-            )
-
-        return Response({"message": "Ações atualizadas com sucesso!"})
+        return Response({"message": "Ações atualizadas com sucesso!"}, status=status.HTTP_200_OK)
