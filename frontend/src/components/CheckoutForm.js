@@ -13,6 +13,8 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
             return;
         }
 
+        const cardElement = elements.getElement(CardElement);
+
         try {
             // Criar PaymentIntent no backend
             const paymentIntentResponse = await fetch('http://localhost:8000/auth/plans/', {
@@ -41,7 +43,7 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
             // Confirmar o pagamento com o Stripe
             const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
-                    card: elements.getElement(CardElement),
+                    card: cardElement,
                     billing_details: {
                         email: userEmail,
                     },
@@ -54,14 +56,7 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
             }
 
             if (paymentIntent.status === 'succeeded') {
-                console.log('Pagamento bem-sucedido, atualizando usuário:', {
-                    name: selectedPlan.plan_name,
-                    email: userEmail,
-                    username: userName,
-                    whatsapp: userWhatsapp,
-                    password: userPassword,
-                    payment_intent_id: paymentIntent.id,
-                });
+                console.log('paymentIntent:', paymentIntent); // Log para inspeção
 
                 const updateUserResponse = await fetch('http://localhost:8000/auth/plans/', {
                     method: 'POST',
@@ -75,6 +70,7 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                         whatsapp: userWhatsapp,
                         password: userPassword,
                         payment_intent_id: paymentIntent.id,
+                        payment_method_id: paymentIntent.payment_method, // Envie o ID do método de pagamento
                         action: 'confirm_payment', // Ação para confirmar o pagamento e atualizar o usuário
                     }),
                 });

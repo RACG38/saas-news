@@ -1,27 +1,4 @@
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import Cliente, Plano, AcaoSelecionada
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.models import User
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.exceptions import ValidationError
-from django.db import transaction
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import check_password
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.utils import timezone
-import stripe
-import json
-from datetime import timedelta
-import requests
-from bs4 import BeautifulSoup
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import RefreshToken
+from .libs import *
 
 
 stripe.api_key = 'sk_test_51Pn4lyFoYdflkG65qPLotl9dBgfaHOltbrQHlGXcyagLR8JpBTWpJIwSFmLgMI3rvRwBF1RmQ596z4ZvCCm1QhCg00rhjYHrvk'
@@ -87,9 +64,10 @@ class PlansView(APIView):
 
             # Verificar se todos os campos obrigatórios estão presentes
             if not nome or not email or not whatsapp or not password:
-                raise ValidationError("Todos os campos são obrigatórios.")
+                    raise ValidationError("Todos os campos são obrigatórios.")
 
-            # Verifique se o plano existe na base de dados pelo ID
+
+            # Verificar se o plano existe na base de dados pelo ID
             plano = Plano.objects.filter(id=plano_id).first()
             if not plano:
                 print("Plano não encontrado.")
@@ -106,10 +84,14 @@ class PlansView(APIView):
 
             elif action == 'confirm_payment':
                 payment_intent_id = request.data.get('payment_intent_id')
-                if not payment_intent_id:
-                    print("Payment Intent ID não fornecido.")
-                    return Response({'error': 'Payment Intent ID não fornecido.'}, status=status.HTTP_400_BAD_REQUEST)
-                return self.confirm_payment(payment_intent_id, email, plano, nome, whatsapp, password)
+                payment_method_id = request.data.get('payment_method_id')
+                
+                if not payment_intent_id or not payment_method_id:
+                    print("Payment Intent ID ou Payment Method ID não fornecido.")
+                    return Response({'error': 'Payment Intent ID ou Payment Method ID não fornecido.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Chamar confirm_payment com os IDs corretos
+                return self.confirm_payment(payment_intent_id, payment_method_id, email, plano, nome, whatsapp, password)
 
             else:
                 print("Ação inválida.")
@@ -141,32 +123,59 @@ class PlansView(APIView):
             print(f"Erro ao criar PaymentIntent: {str(e)}")
             return Response({"message": f"Erro ao criar PaymentIntent: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def confirm_payment(self, payment_intent_id, email, plano, nome, whatsapp, password):
+    def confirm_payment(self, payment_intent_id, payment_method_id, email, plano, nome, whatsapp, password):
         try:
-            payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+            # Recuperar detalhes completos do payment_method usando o ID correto
+            payment_method = stripe.PaymentMethod.retrieve(payment_method_id)
+            card_details = payment_method.card
+            
+            # Salvar ou atualizar as informações do cliente
+            cliente, created = Cliente.objects.update_or_create(
+                email=email,
+                defaults={
+                    'nome': nome,
+                    'whatsapp': whatsapp,
+                    'password': password,  # Aqui você pode usar make_password para hashear a senha se necessário
+                    'plano': plano,
+                    'data_ultimo_pagamento': timezone.now(),
+                }
+            )
 
-            if payment_intent['status'] == 'succeeded':
-                cliente, created = Cliente.objects.update_or_create(
-                    email=email,
-                    defaults={
-                        'nome': nome,
-                        'whatsapp': whatsapp,
-                        'password': make_password(password),
-                        'plano': plano,  # Aqui `plano` é uma instância do modelo `Plano` com base no ID
-                        'data_ultimo_pagamento': timezone.now() - timedelta(hours=3)
-                    }
-                )
-                message = "Conta criada e pagamento confirmado!" if created else "Pagamento confirmado e dados atualizados!"
-                return Response({'success': True, 'message': message, 'redirect': 'painel'}, status=status.HTTP_200_OK)
+            # Salvar os detalhes do pagamento e agendar a próxima renovação
+            dados_pagamento = DadosPagamento.objects.create(
+                cliente=cliente,
+                numero_cartao=card_details.last4,  # Armazena os últimos 4 dígitos do cartão
+                data_vencimento=f"{card_details.exp_month}/{str(card_details.exp_year)[-2:]}",  # MM/YY
+                cep=payment_method.billing_details.address.postal_code if payment_method.billing_details.address else '',
+                data_renovacao_plano=timezone.now().date() + timezone.timedelta(days=30)
+            )
+
+            # Enviar e-mail de boas-vindas ou de renovação
+            if created:
+                subject = f'{cliente.nome}, bem-vindo(a) ao Nosso Serviço!'
+                html_message = render_to_string('email/welcome.html', {'cliente': cliente, 'plano': plano, 'dados_pagamento': dados_pagamento})
+                plain_message = strip_tags(html_message)
             else:
-                return Response({'success': False, 'message': 'Pagamento não foi concluído.'})
+                subject = f'{cliente.nome}, sua renovação de Assinatura foi Concluída'
+                html_message = render_to_string('email/renewal.html', {'cliente': cliente, 'plano': plano, 'dados_pagamento': dados_pagamento})
+                plain_message = strip_tags(html_message)
+
+            send_mail(
+                subject,
+                plain_message,
+                'renan.acg7@gmail.com',  # Substitua pelo seu endereço de e-mail configurado
+                [cliente.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+
+            message = "Conta criada e pagamento confirmado!" if created else "Pagamento confirmado e dados atualizados!"
+            return Response({'success': True, 'message': message}, status=status.HTTP_200_OK)
 
         except stripe.error.StripeError as e:
-            print(f"Erro ao confirmar pagamento: {str(e)}")
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
-            print(f"Erro ao confirmar pagamento: {str(e)}, tipo: {type(e)}")
             return Response({'success': False, 'message': f"Erro inesperado: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class DashboardView(APIView):

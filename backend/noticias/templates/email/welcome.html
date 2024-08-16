@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo!</title>
+</head>
+<body>
+    <h1>Bem-vindo, {{ cliente.nome }}!</h1>
+    <p>Estamos felizes em tê-lo conosco no plano {{ plano.nome_plano }}.</p>
+    <p>Detalhes do pagamento:</p>
+    <ul>
+        <li>Valor: R$ {{ plano.valor }}</li>
+        <li>Data da Renovação: {{ dados_pagamento.data_renovacao_plano }}</li>
+    </ul>
+    <p>Qualquer dúvida, estamos à disposição.</p>
+    <p>Atenciosamente, <br> Sua Empresa</p>
+</body>
+</html>

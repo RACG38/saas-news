@@ -1,4 +1,4 @@
 git status
 git add .
-git commit -m "Adiciona novos ajustes ao layout do Dashboard"
+git commit -m "Versão atualizada"
 git push origin main

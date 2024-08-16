@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renovação Concluída</title>
+</head>
+<body>
+    <h1>Olá, {{ cliente.nome }}!</h1>
+    <p>Sua assinatura do plano {{ plano.nome_plano }} foi renovada com sucesso.</p>
+    <p>Detalhes do pagamento:</p>
+    <ul>
+        <li>Valor: R$ {{ plano.valor }}</li>
+        <li>Data da próxima renovação: {{ dados_pagamento.data_renovacao_plano }}</li>
+    </ul>
+    <p>Qualquer dúvida, estamos à disposição.</p>
+    <p>Atenciosamente, <br> Sua Empresa</p>
+</body>
+</html>

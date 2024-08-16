@@ -16,21 +16,9 @@ class Plano(models.Model):
     def __str__(self):
         return self.nome_plano
     
-class DadosPagamento(models.Model):
-    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='dados_pagamento')
-    numero_cartao = models.CharField(max_length=16)
-    data_vencimento = models.CharField(max_length=5)  # Formato MM/YY
-    cvv = models.CharField(max_length=4)
-    cep = models.CharField(max_length=10)
-    data_renovacao_plano = models.DateField(null=True, blank=True)  
-
-    def __str__(self):
-        return f'Dados de Pagamento de {self.cliente.nome}'
-
     class Meta:
-        verbose_name = 'Dados de Pagamento'
-        verbose_name_plural = 'Dados de Pagamento'
-
+        verbose_name = 'Planos disponíveis'
+        verbose_name_plural = 'Planos disponíveis'
     
 class Cliente(models.Model):
     nome = models.CharField(max_length=255)
@@ -41,7 +29,7 @@ class Cliente(models.Model):
     data_ultimo_pagamento = models.DateField(null=True, blank=True)  
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} ({self.email})"
     
 class AcaoSelecionada(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='acoes_selecionadas')
@@ -49,4 +37,31 @@ class AcaoSelecionada(models.Model):
     nome = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.cliente.nome} - {self.simbolo}"
+        return f"{self.cliente.email} - {self.simbolo}"
+    
+    class Meta:
+        verbose_name = 'Tickers selecionados'
+        verbose_name_plural = 'Tickers selecionados'
+    
+    
+class DadosPagamento(models.Model):
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='dados_pagamento')
+    numero_cartao = models.CharField(max_length=16)
+    data_vencimento = models.CharField(max_length=5)  # Formato MM/YY
+    cep = models.CharField(max_length=10)
+    data_renovacao_plano = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Dados de Pagamento de {self.cliente.nome}'
+
+    class Meta:
+        verbose_name = 'Dados de Pagamento'
+        verbose_name_plural = 'Dados de Pagamento'
+
+class Noticia(models.Model):
+    acao_selecionada = models.ForeignKey(AcaoSelecionada, on_delete=models.CASCADE, related_name='noticias')
+    fonte = models.CharField(max_length=255)
+    conteudo = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Notícia sobre {self.acao_selecionada.simbolo}"
