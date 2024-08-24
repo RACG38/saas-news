@@ -13,6 +13,32 @@ const Register = () => {
 
     const navigate = useNavigate();
 
+    const formatPhoneNumber = (value) => {
+        // Remove tudo que não é número
+        let phoneNumber = value.replace(/\D/g, '');
+
+        // Limita o número de caracteres a 11 dígitos
+        if (phoneNumber.length > 11) {
+            phoneNumber = phoneNumber.substring(0, 11);
+        }
+
+        // Formata o número para (xx)xxxxx-xxxx
+        if (phoneNumber.length > 10) {
+            return phoneNumber.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (phoneNumber.length > 5) {
+            return phoneNumber.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        } else if (phoneNumber.length > 2) {
+            return phoneNumber.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+        } else {
+            return phoneNumber.replace(/(\d{0,2})/, '($1');
+        }
+    };
+
+    const handleWhatsappChange = (e) => {
+        const formattedNumber = formatPhoneNumber(e.target.value);
+        setWhatsapp(formattedNumber);
+    };
+
     const handleRegister = async (e) => {
         e.preventDefault();
 
@@ -22,7 +48,8 @@ const Register = () => {
             return;
         }
 
-        const whatsappPattern = /^[0-9]{10,15}$/;
+        // Atualização da expressão regular para corresponder ao formato correto
+        const whatsappPattern = /^\(\d{2}\)\s\d{5}-\d{4}$/;
         if (!whatsappPattern.test(whatsapp)) {
             setMessage('Por favor, insira um número de WhatsApp válido');
             setSuccess(false);
@@ -39,7 +66,7 @@ const Register = () => {
                 body: JSON.stringify({
                     username: firstName,
                     email,
-                    whatsapp,
+                    whatsapp: whatsapp.replace(/\D/g, ''), // Envia somente os números para o backend
                     password
                 }),
             });
@@ -58,6 +85,12 @@ const Register = () => {
                         }
                     }
                 });
+            } else if (data.redirect === 'login') {
+                setMessage(data.message);
+                setSuccess(true);
+                // setTimeout(() => {
+                //     navigate('/login', { state: { message: data.message } });
+                // }, 3000);  // Delay de 3 segundos antes de redirecionar para o login
             } else {
                 setMessage(data.message);
                 setSuccess(false);
@@ -73,7 +106,7 @@ const Register = () => {
     return (
         <div className="registration-container">
             <h2>Crie sua conta grátis</h2>
-            <p>Sincronize suas transações na plataforma e acompanhe a performance da sua carteira diariamente</p>
+            <p>Faça o seu cadastro na plataforma para receber as principais notícias da sua carteira diariamente</p>
             <form onSubmit={handleRegister}>
                 <input
                     type="text"
@@ -93,7 +126,7 @@ const Register = () => {
                     type="tel"
                     placeholder="Whatsapp"
                     value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
+                    onChange={handleWhatsappChange}  // Use a função handleWhatsappChange
                     required
                 />
                 <input

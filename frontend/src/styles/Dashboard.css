@@ -16,7 +16,7 @@ html, body {
 }
 
 .sidebar {
-    width: 250px; /* Largura fixa para o sidebar */
+    width: 380px; /* Largura fixa para o sidebar */
     background-color: #4a4956; /* Cor do sidebar */
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
@@ -48,42 +48,79 @@ html, body {
 
 .stocks-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* Exibe exatamente 5 cards por linha */
-    gap: 15px;
-    width: 100%; /* Garante que a grid ocupa 100% do espaço disponível */
-    margin: 0 auto; /* Centraliza a grid horizontalmente */
-    padding-bottom: 20px; /* Espaço inferior para facilitar a rolagem até o final */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: 20px;
 }
 
 .stock-card {
-    width: 220px; /* Largura */
-    height: 110px; /* Altura */
-    padding: 13px;
-    background-color: #f0f0f0;
-    border: 3px solid transparent;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.2s, border-color 0.2s;
-    font-size: 1rem; /* Tamanho do texto relativo */
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    flex-direction: row;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid transparent;
+    width: 100%;
+    max-width: 300px; /* Define um limite máximo de largura */
+    min-width: 300px; /* Define um limite mínimo de largura para uniformidade */
+    height: auto;
+    min-height: 150px; /* Define um limite mínimo de altura para uniformidade */
+    box-sizing: border-box; /* Inclui o padding e a borda dentro do tamanho total */
 }
 
 .stock-card.selected {
-    border-color: #04963e;
-    border-radius: 18px;
-    background-color: #e8f5e9;
-    transform: scale(1.05);
-    color: #04963e;
+    border-color: #00f262;
+    background-color: #00f262;
+    width: 100%; /* Mantém a largura mesmo quando selecionado */
+    max-width: px; /* Garante que o card não ultrapasse esse limite ao ser selecionado */
 }
 
-.stock-card p {
-    margin: 15px 0;
-    font-size: 1rem; /* Tamanho do texto relativo */
+.stock-card.selected .image-container {
+    background-color: #00f262; /* Altera a cor de fundo da imagem para verde quando selecionado */
 }
+
+.image-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.symbol-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.stock-image {
+    width: 100%; /* Ocupa 100% da largura do contêiner */
+    height: 100%; /* Ocupa 100% da altura do contêiner */
+    object-fit: cover; /* Faz a imagem preencher o contêiner, cortando as bordas se necessário */
+    transform: scale(1.1); /* Aplica um leve zoom na imagem */
+    transition: transform 0.3s ease; /* Suaviza a transição do zoom */
+    border-radius: 15px; /*Arredonda a borda*/
+}
+
+.stock-card:hover .stock-image {
+    transform: scale(1.15); /* Aplica um efeito de zoom ao passar o mouse */
+}
+
+.stock-symbol {
+    font-size: 1.5rem; /* Tamanho do texto do símbolo */
+    font-weight: bold;
+    color: #333333; /* Cor do texto */
+    text-align: center;
+}
+
 
 .sidebar-button {
     display: block;
@@ -154,7 +191,9 @@ html, body {
 }
 
 .custom-heading {
-    color: #4caf50; /* Azul claro */
+    font-size: 20px;
+    color: #4caf50;
+    margin-bottom: 40px;
 }
 
 .logout-container {

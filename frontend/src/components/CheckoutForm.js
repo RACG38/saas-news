@@ -1,23 +1,48 @@
-import React from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import React, { useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useNavigate } from 'react-router-dom';
 
-const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPassword, navigate }) => {
+const stripePromise = loadStripe('pk_test_51Pn4lyFoYdflkG65WPti0iFUvKpCaTa4xSoGu9Zu2JvIAwbKhHfA73F9b2cO7DddKbrF6PXE05IXQ5o8DqFvQwE1007moBnRIJ');  // Substitua com sua chave publicável do Stripe
+
+const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPassword, onPaymentResult }) => {
     const stripe = useStripe();
     const elements = useElements();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setLoading(true);
 
         if (!stripe || !elements) {
-            console.error('Stripe.js ainda não foi carregado.');
+            setLoading(false);
             return;
         }
 
         const cardElement = elements.getElement(CardElement);
 
+        // 1. Crie o PaymentMethod no frontend
+        const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardElement,
+            billing_details: {
+                email: userEmail,
+            },
+        });
+
+        if (paymentMethodError) {
+            console.error('Erro ao criar PaymentMethod:', paymentMethodError.message);
+            onPaymentResult('error');
+            setLoading(false);
+            return;
+        }
+
+        console.log('PaymentMethod criado com sucesso:', paymentMethod);
+
+        // 2. Envie o PaymentMethod ID para o backend para criar a assinatura
         try {
-            // Criar PaymentIntent no backend
-            const paymentIntentResponse = await fetch('http://localhost:8000/auth/plans/', {
+            const response = await fetch('http://localhost:8000/auth/plans/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -28,74 +53,52 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                     username: userName,
                     whatsapp: userWhatsapp,
                     password: userPassword,
-                    amount: parseFloat(selectedPlan.price.replace('R$', '').replace(',', '.')) * 100, // Convertendo para centavos
-                    action: 'create_payment_intent', // Ação para distinguir o tipo de requisição
+                    action: 'confirm_payment',  // Usar a ação confirm_payment para criar a assinatura
+                    payment_method: paymentMethod
                 }),
             });
 
-            if (!paymentIntentResponse.ok) {
-                const paymentIntentData = await paymentIntentResponse.json();
-                throw new Error(paymentIntentData.message);
+            const data = await response.json();
+
+            if (data.success) {
+                console.log('Assinatura criada com sucesso:', data.subscription_id);
+                onPaymentResult('success');
+
+                // Navegar para a tela de login após o sucesso
+                setTimeout(() => {
+                    navigate('/login');
+                }, 5000);  // Adiciona um delay de 5 segundos
+
+            } else {
+                console.error('Erro ao criar a assinatura no backend:', data.error);
+                onPaymentResult('error');
             }
 
-            const { client_secret: clientSecret } = await paymentIntentResponse.json();
-
-            // Confirmar o pagamento com o Stripe
-            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-                payment_method: {
-                    card: cardElement,
-                    billing_details: {
-                        email: userEmail,
-                    },
-                },
-            });
-
-            if (error) {
-                console.error('Erro ao confirmar o pagamento:', error.message);
-                return;
-            }
-
-            if (paymentIntent.status === 'succeeded') {
-                console.log('paymentIntent:', paymentIntent); // Log para inspeção
-
-                const updateUserResponse = await fetch('http://localhost:8000/auth/plans/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        plano_id: selectedPlan.plan_id,
-                        email: userEmail,
-                        username: userName,
-                        whatsapp: userWhatsapp,
-                        password: userPassword,
-                        payment_intent_id: paymentIntent.id,
-                        payment_method_id: paymentIntent.payment_method, // Envie o ID do método de pagamento
-                        action: 'confirm_payment', // Ação para confirmar o pagamento e atualizar o usuário
-                    }),
-                });
-
-                if (!updateUserResponse.ok) {
-                    const updateUserData = await updateUserResponse.json();
-                    throw new Error(updateUserData.message);
-                }
-
-                console.log('Usuário criado ou atualizado:', await updateUserResponse.json());
-                navigate('/login');
-            }
         } catch (error) {
-            console.error('Erro no processo de pagamento:', error.message);
+            console.error('Erro ao processar a assinatura:', error.message);
+            onPaymentResult('error');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <CardElement />
-            <button type="submit" disabled={!stripe}>
-                Pagar {selectedPlan.price}
+            <button type="submit" disabled={!stripe || loading}>
+                {loading ? <div className="spinner"></div> : `Pagar ${selectedPlan.price}`}
             </button>
+            {loading && (
+                <p className="loading-text">Estamos validando o seu pagamento... só vai levar mais alguns segundos.</p>
+            )}
         </form>
     );
 };
 
-export default CheckoutForm;
+const Checkout = (props) => (
+    <Elements stripe={stripePromise}>
+        <CheckoutForm {...props} />
+    </Elements>
+);
+
+export default Checkout;

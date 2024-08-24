@@ -1,16 +1,22 @@
 /* Container principal que cobre a tela inteira */
 body {
     display: flex;
-    justify-content: center; /* Alinhamento horizontal */
-    align-items: center;     /* Alinhamento vertical */
-    height: 100vh;           /* Altura da viewport completa */
-    background-color: #120c2b; /* Cor de fundo suave */
-    margin: 0; /* Remove margens padrão do body */
+    justify-content: flex-end; /* Alinha o contêiner à direita */
+    align-items: center;       /* Alinhamento vertical */
+    height: 100vh;             /* Altura da viewport completa */
+    background-color: #291968; /* Cor de fundo */
+    margin: 0;                 /* Remove margens padrão do body */
+    padding-right: 50px;       /* Adiciona espaçamento à direita */
+    background-image: url(https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/16307-b31032316e6e88916f46f0718cf9328c.webp);
+    background-position: 50% 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+
 }
 
 .login-container {
-    max-width: 400px;        /* Tamanho máximo da caixa */
-    padding: 30px;           /* Espaçamento interno */
+    max-width: 500px;        /* Aumenta o tamanho máximo da caixa */
+    padding: 40px;           /* Espaçamento interno maior */
     border: 1px solid #ccc;  /* Borda da caixa */
     border-radius: 8px;      /* Cantos arredondados */
     background-color: #fff;  /* Cor de fundo da caixa */
@@ -29,21 +35,21 @@ body {
 }
 
 .login-form input {
-    width: 90%;
-    padding: 10px;
+    width: 95%;               /* Aumenta a largura dos inputs */
+    padding: 12px;            /* Aumenta o padding dos inputs */
     margin: 10px 0;
     border: 2px solid #ccc;
     border-radius: 4px;
 }
 
 .login-form button {
-    width: 95%;
-    padding: 10px;
-    margin-top: 10px;
+    width: 100%;              /* Botão ocupa toda a largura disponível */
+    padding: 14px;            /* Aumenta o padding do botão */
+    margin-top: 12px;
     background-color: #333;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 25px;      /* Arredonda o botão */
     cursor: pointer;
 }
 
@@ -52,11 +58,11 @@ body {
 }
 
 .social-login button {
-    width: 95%;
-    padding: 10px;
-    margin: 5px 0;
+    width: 100%;              /* Botões de login social ocupam toda a largura */
+    padding: 12px;            /* Aumenta o padding dos botões */
+    margin: 8px 0;
     border: none;
-    border-radius: 4px;
+    border-radius: 25px;      /* Arredonda os botões sociais */
     color: white;
     cursor: pointer;
 }

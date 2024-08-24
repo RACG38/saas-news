@@ -1,11 +1,23 @@
+body {
+    height: 871.955px;
+    background-color: rgb(9,10,22);
+    background-image: url(https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/16307-b31032316e6e88916f46f0718cf9328c.webp);
+    background-position: 50% 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+
 .registration-container {
-    max-width: 300px;
-    margin: auto;
-    padding: 20px;
+    max-width: 500px; /* Aumenta a largura do menu */
+    padding: 30px; /* Aumenta o padding para mais espaço interno */
     font-family: Arial, sans-serif;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+    position: absolute;
+    right: 50px; /* Aumenta a distância da borda direita da tela */
+    top: 15%; /* Ajusta a posição vertical para centralizar melhor */
 }
 
 .registration-container h2 {
@@ -18,34 +30,36 @@
     color: #666;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="password"] {
+.registration-container input[type="text"],
+.registration-container input[type="email"],
+.registration-container input[type="tel"],
+.registration-container input[type="password"] {
     width: 100%;
-    padding: 8px;
+    padding: 12px; /* Aumenta o padding dos inputs */
     margin: 10px 0;
     display: inline-block;
     border: 1px solid #ccc;
     box-sizing: border-box;
+    border-radius: 4px; /* Adiciona bordas arredondadas */
 }
 
-button {
+.registration-container button {
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
-    margin: 8px auto; /* Ajusta as margens para centralizar o botão */
+    margin: 16px auto; /* Ajusta as margens para centralizar o botão */
     border: none;
     cursor: pointer;
-    width: 80%; /* Define uma largura menor para o botão */
+    width: 100%; /* Botão ocupa toda a largura disponível */
     display: block; /* Garante que o botão seja tratado como um bloco */
+    border-radius: 50px; /* Aumenta o valor para arredondar mais */
 }
 
-button:hover {
+.registration-container button:hover {
     opacity: 0.8;
 }
 
-.social-login-buttons button {
+.registration-container .social-login-buttons button {
     background-color: #ddd;
     margin: 5px;
     padding: 10px;
@@ -53,12 +67,12 @@ button:hover {
     display: inline-block;
 }
 
-.social-login-buttons .facebook {
+.registration-container .social-login-buttons .facebook {
     background-color: #3B5998;
     color: white;
 }
 
-.social-login-buttons .google {
+.registration-container .social-login-buttons .google {
     background-color: #dd4b39;
     color: white;
 }

@@ -4,6 +4,34 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Dashboard.css';
 
+const getStockImagePath = async (symbol) => {
+    const prefix = symbol.slice(0, 4);
+    const svgImagePath = `/images/${prefix}.svg`;
+    const jpgImagePath = `/images/${prefix}.jpg`;
+
+    try {
+        // Tenta buscar a imagem .svg
+        let response = await fetch(svgImagePath);
+        if (response.status === 200 && response.headers.get('content-type').includes('image/svg+xml')) {
+            return svgImagePath;
+        } 
+        
+        // Se a imagem .svg não for encontrada, tenta buscar a versão .jpg
+        response = await fetch(jpgImagePath);
+        if (response.status === 200 && response.headers.get('content-type').includes('image/jpeg')) {
+            return jpgImagePath;
+        }
+
+        // Se nenhuma das duas imagens for encontrada, retorna a imagem padrão
+        console.log('Nenhuma imagem encontrada, retornando imagem padrão.');
+        return '/images/default.svg';
+
+    } catch (error) {
+        console.error(`Erro ao buscar a imagem para: ${prefix}`, error);
+        return '/images/default.svg';
+    }
+};
+
 const Dashboard = () => {
     const [userData, setUserData] = useState(null);
     const [selectedStocks, setSelectedStocks] = useState([]);
@@ -11,10 +39,28 @@ const Dashboard = () => {
     const [error, setError] = useState(''); 
     const [initialLoad, setInitialLoad] = useState(true);
     const [showMyStocks, setShowMyStocks] = useState(false); 
+    const [stocksWithImages, setStocksWithImages] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchData(); 
+        const fetchImages = async () => {
+            const userId = localStorage.getItem('userId');
+            const response = await fetch(`http://localhost:8000/auth/dashboard/?cliente_id=${userId}`);
+            const data = await response.json();
+
+            if (data) {
+                const uniqueStocks = removeDuplicates(data.acoes_disponiveis);
+                setUserData({ ...data, acoes_disponiveis: uniqueStocks });
+
+                const updatedStocks = await Promise.all(uniqueStocks.map(async (acao) => {
+                    const imagePath = await getStockImagePath(acao.simbolo);
+                    return { ...acao, imagePath };
+                }));
+                setStocksWithImages(updatedStocks);
+            }
+        };
+
+        fetchImages();
     }, [navigate]);
 
     const removeDuplicates = (stocks) => {
@@ -30,11 +76,16 @@ const Dashboard = () => {
         const userId = localStorage.getItem('userId');
         fetch(`http://localhost:8000/auth/dashboard/?cliente_id=${userId}`)
         .then(response => response.json())
-        .then(data => {
-            
+        .then(async (data) => {
             if (data) {
                 const uniqueStocks = removeDuplicates(data.acoes_disponiveis);
                 setUserData({ ...data, acoes_disponiveis: uniqueStocks });
+
+                const updatedStocks = await Promise.all(uniqueStocks.map(async (acao) => {
+                    const imagePath = await getStockImagePath(acao.simbolo);
+                    return { ...acao, imagePath };
+                }));
+                setStocksWithImages(updatedStocks);
 
                 if (data.acoes_selecionadas && data.acoes_selecionadas.length > 0) {
                     setSelectedStocks(data.acoes_selecionadas.map(acao => acao.simbolo));
@@ -127,7 +178,8 @@ const Dashboard = () => {
 
     const availableLetters = getAvailableLetters();
 
-    const filteredStocks = userData?.acoes_disponiveis?.filter(acao => {
+    const filteredStocks = stocksWithImages
+    .filter(acao => {
         const simbolo = acao.simbolo.trim().toUpperCase();
 
         if (showMyStocks) {
@@ -135,21 +187,21 @@ const Dashboard = () => {
         } else if (filterLetter) {
             return simbolo.startsWith(filterLetter);
         } else if (initialLoad) {
-            return selectedStocks.includes(simbolo) || selectedStocks.length === 0;
+            return true;  // Exibe todos os stocks na carga inicial
         } else {
-            return true;
+            return true;  // Exibe todos os stocks quando não há filtro aplicado
         }
-    }) || [];
+    })
+    .sort((a, b) => a.simbolo.localeCompare(b.simbolo)); // Ordenação alfabética
 
     if (!userData) return <div>Carregando...</div>;
 
     return (
         <div className="dashboard">
             <div className="sidebar">
+            <h3 className="custom-heading">Painel de configurações da conta</h3>
                 <p><strong>Olá </strong> {userData.cliente ? userData.cliente.nome : 'N/A'}</p>
-                <p><strong>Plano </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>
-                <h3 className="custom-heading">Painel de configurações da conta</h3>             
-                
+                <p><strong>Plano </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>               
                 <p><strong>Quantidade de Ativos:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_ativos : 'N/A'}</p>
                 <p><strong>Quantidade de Notícias:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_noticias : 'N/A'}</p>
                 <p><strong>Email:</strong> {userData.cliente && userData.cliente.plano ? (userData.cliente.plano.email_opt ? 'Sim' : 'Não') : 'N/A'}</p>
@@ -170,7 +222,7 @@ const Dashboard = () => {
                 </div>
             </div>
             <div className="content">                
-                <div className="stocks-section">
+            <div className="stocks-section">
                     <div className="letter-filter">
                         <span 
                             className={`filter-letter ${showMyStocks ? 'active' : ''}`} 
@@ -188,6 +240,12 @@ const Dashboard = () => {
                             </span>
                         ))}
                     </div>
+
+                    {/* Texto com a quantidade de empresas */}
+                    <p style={{ textAlign: 'left', color: '#ffffff', margin: '50px 0' }}>
+                        Quantidade de empresas exibidas: {filteredStocks.length}
+                    </p>
+
                     {showMyStocks && filteredStocks.length === 0 ? (
                         <div style={{ textAlign: 'center', color: 'white', marginTop: '300px', fontSize: 30}}>
                             <h2>📈 Você ainda não possui ações selecionadas.</h2>
@@ -202,8 +260,16 @@ const Dashboard = () => {
                                         className={`stock-card ${selectedStocks.includes(acao.simbolo) ? 'selected' : ''}`}
                                         onClick={() => handleStockSelection(acao.simbolo)}
                                     >
-                                        <p>{acao.simbolo}</p>
-                                        <p>{acao.nome}</p>
+                                        <div className="image-container">
+                                            <img 
+                                                src={acao.imagePath} 
+                                                alt={`${acao.nome} logo`} 
+                                                className="stock-image"
+                                            />
+                                        </div>
+                                        <div className="symbol-container">
+                                            <p className="stock-symbol">{acao.simbolo}</p>
+                                        </div>
                                     </div>
                                 ))
                             ) : <p>Nenhuma ação disponível.</p>}

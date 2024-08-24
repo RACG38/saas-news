@@ -4,6 +4,8 @@ import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Register from './components/Register';
 import Plans from './components/Plans';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const isAuthenticated = () => {
     return localStorage.getItem('authToken') !== null;
