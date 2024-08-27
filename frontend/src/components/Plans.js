@@ -36,14 +36,14 @@ const Plans = () => {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(null);
-    const [paymentError, setPaymentError] = useState(null);
+    const [paymentError, setPaymentError] = useState(null);   
     const navigate = useNavigate();
     const location = useLocation();
 
-    const { firstName, whatsapp, email, password } = location.state?.userData || {};
-
+    const { nome, email, whatsapp, password, change_plan } = location.state || {};
 
     const handleFreemiumRegistration = async (plan) => {
+        
         try {
             const response = await fetch('http://localhost:8000/auth/plans/', {
                 method: 'POST',
@@ -51,31 +51,33 @@ const Plans = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    plano_id: plan.plan_id,
+                    plan_id: plan.plan_id,
+                    nome: nome,
                     email: email,
-                    username: firstName,
                     whatsapp: whatsapp,
                     password: password,
-                    action: 'confirm_payment',
+                    action: 'freemium_selected',
+                    change_plan: change_plan
                 }),
-            });
+            });            
+    
+            const responseText = await response.text();            
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message);
+                throw new Error(responseText);
             }
-
-            console.log('Cadastro Freemium realizado:', await response.json());
+    
+            console.log('Cadastro Freemium realizado:', responseText);
             setShowPopup(true);
-
+    
             setTimeout(() => {
                 navigate('/login');
-            }, 3000);
+            }, 1000);
         } catch (error) {
             console.error('Erro ao registrar o plano Freemium:', error.message);
         }
     };
-
+    
     const handlePaymentResult = (result) => {
         if (result === 'success') {
             setPaymentSuccess(true);
@@ -87,10 +89,10 @@ const Plans = () => {
     };
 
     const toggleMenu = (plan) => {
-        console.log('Plano selecionado:', plan.plan_name); 
+        
         if (plan.plan_name === "Freemium") {
             handleFreemiumRegistration(plan); 
-        } else {
+        } else {   
             setSelectedPlan(plan);
             setMenuOpen(true); 
         }
@@ -98,7 +100,7 @@ const Plans = () => {
 
     return (
         <div className="plans-container">
-            <h1>Escolha o plano que deseja adquirir</h1>
+            <h1>{change_plan ? 'Escolha um plano para upgrade' : 'Escolha o plano que deseja adquirir'}</h1>
             <div className="plans">
                 {plans.map((plan) => (
                     <div 
@@ -123,11 +125,12 @@ const Plans = () => {
                     <CheckoutForm
                         selectedPlan={selectedPlan}
                         userEmail={email}
-                        userName={firstName}
+                        userName={nome}
                         userWhatsapp={whatsapp}
                         userPassword={password}
                         navigate={navigate}
                         onPaymentResult={handlePaymentResult}
+                        change_plan={change_plan}
                     />                  
                     <button onClick={() => setMenuOpen(false)}>Fechar</button>
                     {paymentSuccess && (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/RegisterStyles.css';
+import '../styles/Register.css';
 
 const Register = () => {
     const [firstName, setFirstName] = useState('');
@@ -74,17 +74,17 @@ const Register = () => {
             const data = await response.json();
 
             if (data.redirect === 'plans') {
-                // Redirecionar para a página de planos com os dados do usuário
-                navigate('/plans', {
-                    state: {
-                        userData: {
-                            firstName,
-                            whatsapp,
-                            email,
-                            password
-                        }
-                    }
+
+                navigate('/plans', { 
+                    state: { 
+                        nome: firstName, 
+                        email: email, 
+                        whatsapp: whatsapp, 
+                        password: password, 
+                        change_plan: false 
+                    } 
                 });
+                
             } else if (data.redirect === 'login') {
                 setMessage(data.message);
                 setSuccess(true);

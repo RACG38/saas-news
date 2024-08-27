@@ -19,11 +19,11 @@ app.autodiscover_tasks(['noticias'])
 app.conf.beat_schedule = {
     'fetch-daily-news': {
         'task': 'noticias.tasks.fetch_news_for_stocks',  
-        'schedule': crontab(hour=1, minute=25),
+        'schedule': crontab(hour=23, minute=25),
     },
     'send-news-email': {
         'task': 'noticias.tasks.send_daily_news_email',  
-        'schedule': crontab(hour=1, minute=26),
+        'schedule': crontab(hour=23, minute=26),
     },
     'monitor-news-every-minute': {
         'task': 'noticias.tasks.monitor_news_for_pro_clients',

@@ -16,6 +16,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import strip_tags
+from django.utils.crypto import get_random_string
 from .models import *
 from rest_framework import status
 from rest_framework import viewsets

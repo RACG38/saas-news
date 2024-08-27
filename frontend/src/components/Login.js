@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/AuthStyles.css';
+import '../styles/Login.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
+    const [loading, setLoading] = useState(false); // Estado para o carregamento
 
-    // Hook do React Router para navegar programaticamente
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true); // Ativa o carregamento
         try {
             const response = await fetch('http://localhost:8000/auth/login/', {
                 method: 'POST',
@@ -31,20 +32,27 @@ const Login = () => {
             }
 
             const data = await response.json();
-            console.log(data.message);
+            
             setMessage('Login bem-sucedido!');
             setIsError(false);
 
-            // Armazene o ID do cliente no localStorage
             localStorage.setItem('userId', data.cliente_id);
 
-            // Redirecionar para a página de painel após o login bem-sucedido
-            navigate('/dashboard');
+            // Simula um atraso para mostrar a barra de carregamento
+            setTimeout(() => {
+                setLoading(false); // Desativa o carregamento
+                navigate('/dashboard');
+            }, 1000); // 1 segundo de atraso (ajuste conforme necessário)
 
         } catch (error) {
             setMessage(error.message);
             setIsError(true);
+            setLoading(false); // Desativa o carregamento em caso de erro
         }
+    };
+
+    const handleForgotPassword = () => {
+        navigate('/forgotpassword');
     };
 
     return (
@@ -66,14 +74,19 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <button type="submit">ENTRAR</button>
-                <a href="#">Esqueceu sua senha?</a>
+                <button type="submit" disabled={loading}>ENTRAR</button>
+                <a href="#" onClick={handleForgotPassword}>Esqueceu sua senha?</a>
             </form>
             <div className="social-login">
                 {/* <button className="facebook-login">Continue com Facebook</button> */}
                 {/* <button className="google-login">Continue com Google</button> */}
             </div>
             <p>Não tem uma conta? <Link to="/register">Cadastre-se</Link></p>
+            {loading && (
+                <div className="loading-bar">
+                    <div className="loading-bar-progress"></div>
+                </div>
+            )}
             {message && (
                 <div
                     style={{

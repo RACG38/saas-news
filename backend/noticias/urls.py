@@ -6,7 +6,9 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),  # Rota correta
     path('register/', RegisterView.as_view(), name='register'),
     path('plans/', PlansView.as_view(), name='plans'),
-    path('dashboard/', DashboardView.as_view(), name='dashboard'),  # Rota para o dashboard
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),  
+    path('forgotpassword/', ForgotPasswordView.as_view(), name='forgotpassword'),
+    path('verify-token/', VerifyTokenView.as_view(), name='verify-token'),
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

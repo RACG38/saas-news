@@ -11,7 +11,9 @@
     <p>Detalhes do pagamento:</p>
     <ul>
         <li>Valor: R$ {{ plano.valor }}</li>
-        <li>Data da próxima renovação: {{ dados_pagamento.data_renovacao_plano }}</li>
+        <li>Data da renovação do seu plano: {{ data_renovacao_pagamento }}</li>
+        <li>Cartão utilizado: **** **** **** {{ numero_cartao }}</li>
+        <li>Validade do cartão: {{ data_vencimento }}</li>
     </ul>
     <p>Qualquer dúvida, estamos à disposição.</p>
     <p>Atenciosamente, <br> Sua Empresa</p>

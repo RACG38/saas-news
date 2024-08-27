@@ -4,8 +4,8 @@ import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Register from './components/Register';
 import Plans from './components/Plans';
+import ForgotPassword from './components/ForgotPassword';  // Certifique-se de que este caminho está correto
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 const isAuthenticated = () => {
     return localStorage.getItem('authToken') !== null;
@@ -29,6 +29,7 @@ const App = () => {
                         isAuthenticated() ? <Dashboard /> : <Navigate to="/login" />
                     }
                 />
+                <Route path="/forgotpassword" element={<ForgotPassword />} />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </Router>

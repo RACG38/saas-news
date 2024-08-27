@@ -82,28 +82,31 @@ def monitor_news_for_pro_clients():
     current_time = timezone.now()
 
     for cliente in pro_clients:
-        acoes = AcaoSelecionada.objects.filter(cliente=cliente)
+        # Verifica se o plano do cliente é "Pro"
+        if cliente.plano.nome_plano == "Pro":
+            acoes = AcaoSelecionada.objects.filter(cliente=cliente)
 
-        for acao in acoes:
-            # Buscar notícias desde a última verificação (último minuto)
-            url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={current_time - timezone.timedelta(minutes=1)}&sortBy=publishedAt&apiKey=YOUR_API_KEY&language=pt'
-            response = requests.get(url)
-            news_data = response.json()
+            for acao in acoes:
+                # Buscar notícias desde a última verificação (último minuto)
+                url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={current_time - timezone.timedelta(minutes=1)}&sortBy=publishedAt&apiKey=YOUR_API_KEY&language=pt'
+                response = requests.get(url)
+                news_data = response.json()
 
-            if news_data.get('status') == 'ok':
-                for article in news_data.get('articles', []):
-                    # Verificar se a notícia já foi armazenada para evitar duplicatas
-                    if not Noticia.objects.filter(acao_selecionada=acao, url=article['url']).exists():
-                        noticia = Noticia.objects.create(
-                            acao_selecionada=acao,
-                            fonte=article['source']['name'],
-                            conteudo=article['description'] or article['title'],
-                            url=article['url'],
-                            data_publicacao=article['publishedAt']
-                        )
+                if news_data.get('status') == 'ok':
+                    for article in news_data.get('articles', []):
+                        # Verificar se a notícia já foi armazenada para evitar duplicatas
+                        if not Noticia.objects.filter(acao_selecionada=acao, url=article['url']).exists():
+                            noticia = Noticia.objects.create(
+                                acao_selecionada=acao,
+                                fonte=article['source']['name'],
+                                conteudo=article['description'] or article['title'],
+                                url=article['url'],
+                                data_publicacao=article['publishedAt']
+                            )
 
-                        # Enviar email com novo formato HTML e CSS
-                        send_immediate_news_email(cliente, noticia)
+                            # Chama a função apenas se o plano for "Pro"
+                            send_immediate_news_email(cliente, noticia)
+
 
 def send_immediate_news_email(cliente, noticia):
     subject = f"Nova notícia sobre {noticia.acao_selecionada.simbolo}"

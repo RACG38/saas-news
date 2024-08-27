@@ -10,20 +10,16 @@ const getStockImagePath = async (symbol) => {
     const jpgImagePath = `/images/${prefix}.jpg`;
 
     try {
-        // Tenta buscar a imagem .svg
         let response = await fetch(svgImagePath);
         if (response.status === 200 && response.headers.get('content-type').includes('image/svg+xml')) {
             return svgImagePath;
         } 
         
-        // Se a imagem .svg não for encontrada, tenta buscar a versão .jpg
         response = await fetch(jpgImagePath);
         if (response.status === 200 && response.headers.get('content-type').includes('image/jpeg')) {
             return jpgImagePath;
         }
 
-        // Se nenhuma das duas imagens for encontrada, retorna a imagem padrão
-        console.log('Nenhuma imagem encontrada, retornando imagem padrão.');
         return '/images/default.svg';
 
     } catch (error) {
@@ -37,31 +33,40 @@ const Dashboard = () => {
     const [selectedStocks, setSelectedStocks] = useState([]);
     const [filterLetter, setFilterLetter] = useState('');
     const [error, setError] = useState(''); 
-    const [initialLoad, setInitialLoad] = useState(true);
     const [showMyStocks, setShowMyStocks] = useState(false); 
     const [stocksWithImages, setStocksWithImages] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showLimitModal, setShowLimitModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchImages = async () => {
-            const userId = localStorage.getItem('userId');
-            const response = await fetch(`http://localhost:8000/auth/dashboard/?cliente_id=${userId}`);
-            const data = await response.json();
-
-            if (data) {
-                const uniqueStocks = removeDuplicates(data.acoes_disponiveis);
-                setUserData({ ...data, acoes_disponiveis: uniqueStocks });
-
-                const updatedStocks = await Promise.all(uniqueStocks.map(async (acao) => {
-                    const imagePath = await getStockImagePath(acao.simbolo);
-                    return { ...acao, imagePath };
-                }));
-                setStocksWithImages(updatedStocks);
-            }
-        };
-
         fetchImages();
     }, [navigate]);
+
+    const fetchImages = async () => {
+        const userId = localStorage.getItem('userId');
+        const response = await fetch(`http://localhost:8000/auth/dashboard/?cliente_id=${userId}`);
+        const data = await response.json();
+
+        if (data) {
+            const uniqueStocks = removeDuplicates(data.acoes_disponiveis);
+            setUserData({ ...data, acoes_disponiveis: uniqueStocks });
+
+            const updatedStocks = await Promise.all(uniqueStocks.map(async (acao) => {
+                const imagePath = await getStockImagePath(acao.simbolo);
+                return { ...acao, imagePath };
+            }));
+            setStocksWithImages(updatedStocks);
+
+            if (data.acoes_selecionadas && data.acoes_selecionadas.length > 0) {
+                setSelectedStocks(data.acoes_selecionadas.map(acao => acao.simbolo));
+                setShowMyStocks(true); 
+            }
+
+            setLoading(false);
+        }
+    };
 
     const removeDuplicates = (stocks) => {
         const seen = new Set();
@@ -72,43 +77,10 @@ const Dashboard = () => {
         });
     };
 
-    const fetchData = () => {
-        const userId = localStorage.getItem('userId');
-        fetch(`http://localhost:8000/auth/dashboard/?cliente_id=${userId}`)
-        .then(response => response.json())
-        .then(async (data) => {
-            if (data) {
-                const uniqueStocks = removeDuplicates(data.acoes_disponiveis);
-                setUserData({ ...data, acoes_disponiveis: uniqueStocks });
-
-                const updatedStocks = await Promise.all(uniqueStocks.map(async (acao) => {
-                    const imagePath = await getStockImagePath(acao.simbolo);
-                    return { ...acao, imagePath };
-                }));
-                setStocksWithImages(updatedStocks);
-
-                if (data.acoes_selecionadas && data.acoes_selecionadas.length > 0) {
-                    setSelectedStocks(data.acoes_selecionadas.map(acao => acao.simbolo));
-                    setFilterLetter(''); 
-                } else {
-                    setFilterLetter(''); 
-                }
-
-                setInitialLoad(false);
-            } else {
-                setUserData({ error: "Dados do usuário não encontrados" });
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao buscar dados do usuário:', error);
-            setUserData({ error: "Erro ao buscar dados do usuário" });
-        });
-    };
-
     const handleStockSelection = (simbolo) => {
         const maxAtivos = userData?.cliente?.plano?.qtdade_ativos || 0;
         const isSelected = selectedStocks.includes(simbolo);
-
+    
         if (isSelected) {
             setSelectedStocks(prevSelectedStocks => prevSelectedStocks.filter(stock => stock !== simbolo));
         } else {
@@ -116,17 +88,18 @@ const Dashboard = () => {
                 setSelectedStocks(prevSelectedStocks => [...prevSelectedStocks, simbolo]);
                 setError(''); 
             } else {
-                setError(`Você só pode selecionar até ${maxAtivos} ativos.`);
+                setShowLimitModal(true);
             }
         }
     };
 
     const handleSave = () => {
+        console.log("handleSave foi chamado");
         const selectedStocksData = selectedStocks.map(simbolo => {
             const stock = userData.acoes_disponiveis.find(acao => acao.simbolo === simbolo);
             return { simbolo: stock.simbolo, nome: stock.nome };
         });
-
+        
         fetch(`http://localhost:8000/auth/dashboard/`, {
             method: 'POST',
             headers: {
@@ -139,8 +112,9 @@ const Dashboard = () => {
         })
         .then(response => response.json())
         .then(data => {
-            alert('Ações salvas com sucesso!');
-            fetchData(); 
+            console.log("Resposta do servidor:", data);
+            setShowSuccessModal(true);
+            setShowMyStocks(true); 
         })
         .catch(error => {
             console.error('Erro ao salvar ações:', error);
@@ -167,6 +141,21 @@ const Dashboard = () => {
         setShowMyStocks(true); 
     };
 
+    const handleChangePlanClick = () => {
+        
+        // const { firstName, email, whatsapp, password } = userData;
+        
+        navigate('/plans', { 
+            state: { 
+                nome: userData.cliente.nome, 
+                email: userData.cliente.email, 
+                whatsapp: userData.cliente.whatsapp, 
+                password: userData.cliente.password, 
+                change_plan: true 
+            } 
+        });
+    };
+
     const getAvailableLetters = () => {
         const letters = new Set();
         userData?.acoes_disponiveis?.forEach(acao => {
@@ -186,20 +175,24 @@ const Dashboard = () => {
             return selectedStocks.includes(simbolo);
         } else if (filterLetter) {
             return simbolo.startsWith(filterLetter);
-        } else if (initialLoad) {
-            return true;  // Exibe todos os stocks na carga inicial
         } else {
-            return true;  // Exibe todos os stocks quando não há filtro aplicado
+            return true;
         }
     })
-    .sort((a, b) => a.simbolo.localeCompare(b.simbolo)); // Ordenação alfabética
+    .sort((a, b) => a.simbolo.localeCompare(b.simbolo));
 
-    if (!userData) return <div>Carregando...</div>;
+    if (loading) {
+        return (
+            <div className="spinner-container">
+                <div className="spinner"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard">
             <div className="sidebar">
-            <h3 className="custom-heading">Painel de configurações da conta</h3>
+                <h3 className="custom-heading">Painel de configurações da conta</h3>
                 <p><strong>Olá </strong> {userData.cliente ? userData.cliente.nome : 'N/A'}</p>
                 <p><strong>Plano </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>               
                 <p><strong>Quantidade de Ativos:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_ativos : 'N/A'}</p>
@@ -209,20 +202,24 @@ const Dashboard = () => {
                 <p><strong>Tempo Real:</strong> {userData.cliente && userData.cliente.plano ? (userData.cliente.plano.temporeal ? 'Sim' : 'Não') : 'N/A'}</p>
 
                 {error && <p className="error-message">{error}</p>} 
+
+                <div style={{ flexGrow: 1 }}></div>
+
+                <button onClick={handleSave} className="sidebar-button save">Salvar</button>
                 
                 <button onClick={handleClearSelection} className="sidebar-button clear-selection">Limpar Seleção</button>
 
-                <div style={{ flexGrow: 1 }}></div>
-                
-                <button onClick={handleSave} className="sidebar-button save">Salvar</button>
-                
+                <p onClick={handleChangePlanClick} className="upgrade-plan-link">
+                    Quero mudar o meu plano
+                </p>
+                            
                 <div className="logout-container" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faSignOutAlt} size="2x" className="logout-icon" />
                     <span className="logout-text">LOG OUT</span>
                 </div>
             </div>
             <div className="content">                
-            <div className="stocks-section">
+                <div className="stocks-section">
                     <div className="letter-filter">
                         <span 
                             className={`filter-letter ${showMyStocks ? 'active' : ''}`} 
@@ -241,8 +238,7 @@ const Dashboard = () => {
                         ))}
                     </div>
 
-                    {/* Texto com a quantidade de empresas */}
-                    <p style={{ textAlign: 'left', color: '#ffffff', margin: '50px 0' }}>
+                    <p style={{ textAlign: 'left', color: '#ffffff', margin: '70px 0 70px 20px', fontSize: '22px' }}>
                         Quantidade de empresas exibidas: {filteredStocks.length}
                     </p>
 
@@ -277,6 +273,26 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
+
+            {showSuccessModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <h2>✅ Ações salvas com sucesso!</h2>
+                        <button onClick={() => setShowSuccessModal(false)}>Fechar</button>
+                    </div>
+                </div>
+            )}
+            {showLimitModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <h2>⚠️ Limite de Ações Atingido</h2>
+                        <p>Você atingiu o limite de {userData?.cliente?.plano?.qtdade_ativos} ações para o plano {userData?.cliente?.plano?.nome}.
+                            Exclua alguma ação na seção "Minhas Ações" para poder selecionar outra.
+                        </p>
+                        <button onClick={() => setShowLimitModal(false)}>Fechar</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

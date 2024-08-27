@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const stripePromise = loadStripe('pk_test_51Pn4lyFoYdflkG65WPti0iFUvKpCaTa4xSoGu9Zu2JvIAwbKhHfA73F9b2cO7DddKbrF6PXE05IXQ5o8DqFvQwE1007moBnRIJ');  // Substitua com sua chave publicável do Stripe
 
-const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPassword, onPaymentResult }) => {
+const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPassword, onPaymentResult, change_plan }) => {
     const stripe = useStripe();
     const elements = useElements();
     const navigate = useNavigate();
@@ -48,13 +48,15 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    plano_id: selectedPlan.plan_id,
+                    plan_id: selectedPlan.plan_id,
                     email: userEmail,
-                    username: userName,
+                    nome: userName,
                     whatsapp: userWhatsapp,
                     password: userPassword,
                     action: 'confirm_payment',  // Usar a ação confirm_payment para criar a assinatura
-                    payment_method: paymentMethod
+                    payment_method: paymentMethod,
+                    change_plan: change_plan,
+                    
                 }),
             });
 
@@ -73,6 +75,7 @@ const CheckoutForm = ({ selectedPlan, userEmail, userName, userWhatsapp, userPas
                 console.error('Erro ao criar a assinatura no backend:', data.error);
                 onPaymentResult('error');
             }
+            
 
         } catch (error) {
             console.error('Erro ao processar a assinatura:', error.message);

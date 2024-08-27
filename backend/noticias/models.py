@@ -20,6 +20,16 @@ class Plano(models.Model):
         verbose_name = 'Plano disponível'
         verbose_name_plural = 'Planos disponíveis'
 
+class Token(models.Model):
+
+    token_id = models.CharField(max_length=6, null=True, blank=True)
+    data_criacao = models.DateTimeField(null=True, blank=True) 
+    data_expiracao = models.DateTimeField(null=True, blank=True) 
+
+    def __str__(self):
+        return f"{self.token_id}"
+    
+    
 class Cliente(models.Model):
     nome = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -27,7 +37,8 @@ class Cliente(models.Model):
     password = models.CharField(max_length=128, null=True, blank=True)
     plano = models.ForeignKey(Plano, on_delete=models.SET_NULL, null=True, blank=True)
     data_ultimo_pagamento = models.DateField(null=True, blank=True)
-    stripe_customer_id = models.CharField(max_length=255, null=True, blank=True)  # Novo campo
+    stripe_customer_id = models.CharField(max_length=255, null=True, blank=True)  
+    token = models.ForeignKey(Token, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.nome}"
@@ -69,3 +80,4 @@ class Noticia(models.Model):
 
     def __str__(self):
         return f"Notícia sobre {self.acao_selecionada.simbolo}"
+    
