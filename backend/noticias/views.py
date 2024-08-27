@@ -10,14 +10,15 @@ logger.setLevel(logging.DEBUG)
 
 def enviar_email_freemium(cliente, change_plan_flag):
 
+    email_template = 'email/welcome_freemium.html'
+
     if change_plan_flag == True:
 
-        email_template = 'email/change_plan.html'
+        # email_template = 'email/change_plan.html'
         subject = f'{cliente.nome}, a mudança do seu plano foi concluída'
 
     else:
 
-        email_template = 'email/welcome_freemium.html'
         subject = f'{cliente.nome}, bem-vindo(a) ao Plano Freemium!'    
 
     # Contexto para o e-mail
