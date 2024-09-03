@@ -25,10 +25,11 @@
     "eject": "react-scripts eject",
     "backend": "cd ../backend && python manage.py runserver",
     "open-admin": "open-cli http://127.0.0.1:8000/admin/",
-    "celery-worker": "cd ../backend && celery -A saasnews worker -l info",
-    "celery-beat": "cd ../backend && celery -A saasnews beat -l info",
+    "celery-worker": "cd ../backend && celery -A saasnews worker --loglevel=DEBUG",
+    "celery-beat": "cd ../backend && celery -A saasnews beat -l DEBUG",
     "dev": "concurrently \"npm start\" \"npm run backend\" \"npm run open-admin\" \"npm run celery-worker\" \"npm run celery-beat\""
   },
+
   "eslintConfig": {
     "extends": [
       "react-app",

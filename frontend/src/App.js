@@ -4,7 +4,9 @@ import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Register from './components/Register';
 import Plans from './components/Plans';
-import ForgotPassword from './components/ForgotPassword';  // Certifique-se de que este caminho está correto
+import ForgotPassword from './components/ForgotPassword';  
+import TokenVerification from './components/TokenVerification';
+import ResetPassword from './components/ResetPassword';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const isAuthenticated = () => {
@@ -30,6 +32,8 @@ const App = () => {
                     }
                 />
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
+                <Route path="/verify-token" element={<TokenVerification />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </Router>

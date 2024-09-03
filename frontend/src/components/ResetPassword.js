@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import '../styles/ForgotPassword.css';
+import { useNavigate, useLocation } from 'react-router-dom';
+import '../styles/ResetPassword.css';
 
 const ResetPassword = () => {
     
@@ -9,8 +9,11 @@ const ResetPassword = () => {
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { token } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Obter o token do estado de navegação e garantir que seja uma string
+    const token = location.state?.token || '';
 
     const handlePasswordReset = async (e) => {
         e.preventDefault();
@@ -30,7 +33,7 @@ const ResetPassword = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    token: token,
+                    token: token,  // Enviar o token como string
                     password: password,
                 }),
             });

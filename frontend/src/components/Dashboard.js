@@ -98,7 +98,7 @@ const Dashboard = () => {
         const selectedStocksData = selectedStocks.map(simbolo => {
             const stock = userData.acoes_disponiveis.find(acao => acao.simbolo === simbolo);
             return { simbolo: stock.simbolo, nome: stock.nome };
-        });
+        });        
         
         fetch(`http://localhost:8000/auth/dashboard/`, {
             method: 'POST',
@@ -119,7 +119,7 @@ const Dashboard = () => {
         .catch(error => {
             console.error('Erro ao salvar ações:', error);
         });
-    };
+    };    
 
     const handleLogout = () => {
         localStorage.removeItem('userId');
@@ -205,7 +205,7 @@ const Dashboard = () => {
 
                 <div style={{ flexGrow: 1 }}></div>
 
-                <button onClick={handleSave} className="sidebar-button save">Salvar</button>
+                <button onClick={handleSave} className="sidebar-button save">Salvar Seleção</button>
                 
                 <button onClick={handleClearSelection} className="sidebar-button clear-selection">Limpar Seleção</button>
 
@@ -220,22 +220,24 @@ const Dashboard = () => {
             </div>
             <div className="content">                
                 <div className="stocks-section">
-                    <div className="letter-filter">
-                        <span 
-                            className={`filter-letter ${showMyStocks ? 'active' : ''}`} 
-                            onClick={handleShowMyStocks}
-                        >
-                            Minhas Ações
-                        </span>
-                        {availableLetters.map(letter => (
+                    <div className="letter-filter-container">
+                        <div className="letter-filter">
                             <span 
-                                key={letter} 
-                                className={`filter-letter ${filterLetter === letter ? 'active' : ''}`} 
-                                onClick={() => handleLetterFilter(letter)}
+                                className={`filter-letter ${showMyStocks ? 'active' : ''}`} 
+                                onClick={handleShowMyStocks}
                             >
-                                {letter}
+                                Minhas Ações
                             </span>
-                        ))}
+                            {availableLetters.map(letter => (
+                                <span 
+                                    key={letter} 
+                                    className={`filter-letter ${filterLetter === letter ? 'active' : ''}`} 
+                                    onClick={() => handleLetterFilter(letter)}
+                                >
+                                    {letter}
+                                </span>
+                            ))}
+                        </div>
                     </div>
 
                     <p style={{ textAlign: 'left', color: '#ffffff', margin: '70px 0 70px 20px', fontSize: '22px' }}>

@@ -34,13 +34,16 @@
 
 .plans-container h1 {
     margin-bottom: 60px;    
-    color: rgb(204, 202, 202)
+    color: rgb(204, 202, 202);
+    font-size: 2rem;
+    font-weight: bold;
 }
 
 .plan h2, .plan p.price {
     color: #333;
     margin-bottom: 10px;
     text-align: center;
+    font-size: 1.25rem;
 }
 
 .price {
@@ -73,112 +76,27 @@
     margin-bottom: 10px;
 }
 
-/* Estilos para o menu lateral */
-.side-menu {
-    position: fixed;
-    top: 0;
-    right: -100%;  /* O menu começa fora da tela */
-    width: 300px;
-    height: 100%;
-    background-color: white;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
-    padding: 20px;
-    transition: right 0.3s ease;
-    z-index: 1000;
-    overflow-y: auto;  /* Garante que o conteúdo seja rolável */
+
+/* Estilos para a seleção de cartões */
+.card-selection {
+    margin-bottom: 20px; /* Espaço abaixo do grupo de cartões */
 }
 
-.side-menu.open {
-    right: 0;  /* Desliza o menu para dentro da tela quando aberto */
-}
-
-.side-menu h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-/* Estilos para os botões do menu lateral */
-.side-menu button {
-    margin-top: 50px;
-    background-color: green;
-    color: white;
-    border: none;
-    padding: 10px 20px;
+.card-option {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px; /* Espaço entre cada cartão */
     cursor: pointer;
-    border-radius: 50px;
-    width: 150px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    transition: border-color 0.3s ease;
 }
 
-.side-menu button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 6px rgba(0,0,0,0.15);
+.card-option.selected {
+    border-color: #007bff;
+    background-color: #f0f8ff;
 }
 
-/* Estilos para garantir que os campos do formulário sejam visíveis e funcionais */
-#form-checkout {
-    display: block;
-    width: 100%;
+.card-option:hover {
+    border-color: #80bdff;
 }
 
-#form-checkout__cardNumber,
-#form-checkout__expirationDate,
-#form-checkout__securityCode,
-#form-checkout__cardholderName,
-#form-checkout__issuer {
-    width: 100%;
-    margin-bottom: 10px;  /* Espaço entre os campos */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box; /* Garante que padding não afete o width total */
-    background-color: #f9f9f9;  /* Fundo claro para visibilidade */
-}
-
-#form-checkout__installments,
-#form-checkout__identificationType,
-#form-checkout__identificationNumber {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-    background-color: #f9f9f9;
-}
-
-/* Popup geral */
-.popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border: 2px solid green;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-.spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: #09f;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.loading-text {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #555;
-}

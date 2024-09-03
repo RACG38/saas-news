@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import '../styles/Plans.css'; 
 import CheckoutForm from './CheckoutForm';
+
+// Initialize Stripe with your public key directly in the code
+const stripePromise = loadStripe('pk_test_51Pn4lyFoYdflkG65WPti0iFUvKpCaTa4xSoGu9Zu2JvIAwbKhHfA73F9b2cO7DddKbrF6PXE05IXQ5o8DqFvQwE1007moBnRIJ');
 
 const Plans = () => {
     const plans = [
         {
             plan_id: 1,
-            plan_name: "Freemium",
+            plan_name: "Free",
             price: "R$0,00",
             features: ["Receba notícias diárias de até 5 ações¹", 
                        "Serão enviadas as 2 notícias mais relevantes sobre cada ativo por email"],
@@ -36,14 +41,45 @@ const Plans = () => {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(null);
-    const [paymentError, setPaymentError] = useState(null);   
+    const [paymentError, setPaymentError] = useState(null);  
+    const [currentPlan, setCurrentPlan] = useState(null); 
+    const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
     const { nome, email, whatsapp, password, change_plan } = location.state || {};
 
-    const handleFreemiumRegistration = async (plan) => {
-        
+    useEffect(() => {
+        const fetchCurrentPlan = async () => {
+            try {
+                
+                const response = await fetch('http://localhost:8000/auth/plans/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        action: 'get_current_plan',
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error('Erro ao buscar o plano atual:', data.error);
+                } else {
+                    setCurrentPlan(data);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar o plano atual:', error.message);
+            }
+        };
+
+        fetchCurrentPlan();
+    }, [email]);
+
+    const handleFreeRegistration = async (plan) => {
         try {
             const response = await fetch('http://localhost:8000/auth/plans/', {
                 method: 'POST',
@@ -56,7 +92,7 @@ const Plans = () => {
                     email: email,
                     whatsapp: whatsapp,
                     password: password,
-                    action: 'freemium_selected',
+                    action: 'free_selected',
                     change_plan: change_plan
                 }),
             });            
@@ -65,16 +101,15 @@ const Plans = () => {
 
             if (!response.ok) {
                 throw new Error(responseText);
-            }
-    
-            console.log('Cadastro Freemium realizado:', responseText);
+            }           
+                        
             setShowPopup(true);
     
             setTimeout(() => {
                 navigate('/login');
-            }, 1000);
+            }, 2000);
         } catch (error) {
-            console.error('Erro ao registrar o plano Freemium:', error.message);
+            console.error('Erro ao registrar o plano Free:', error.message);
         }
     };
     
@@ -88,23 +123,40 @@ const Plans = () => {
         }
     };
 
-    const toggleMenu = (plan) => {
-        
-        if (plan.plan_name === "Freemium") {
-            handleFreemiumRegistration(plan); 
-        } else {   
-            setSelectedPlan(plan);
-            setMenuOpen(true); 
-        }
+    const handlePaymentStart = () => {
+        setIsPaymentInProgress(true); // Início do pagamento, desabilitar fechamento
     };
 
+    const toggleMenu = (plan) => {
+
+        if (plan.plan_id === currentPlan?.plan_id) {
+            setShowPopup(true);
+            setMenuOpen(false);  // Fechar o menu
+            
+        } else {
+            if (plan.plan_id === 1) {
+                // Feche o menu e não o reabra para Free
+                setMenuOpen(false);
+                handleFreeRegistration(plan);
+            } else {
+                
+                setMenuOpen(true);  // Reabre o menu somente para planos pagos
+                setShowPopup(false);  // Certifique-se de que o pop-up não seja exibido indevidamente
+            }
+        }
+
+        setSelectedPlan(plan);
+    };
+    
+    
+    
     return (
         <div className="plans-container">
-            <h1>{change_plan ? 'Escolha um plano para upgrade' : 'Escolha o plano que deseja adquirir'}</h1>
+            <h1>{change_plan ? 'Escolha um novo plano' : 'Escolha o plano que deseja adquirir'}</h1>
             <div className="plans">
                 {plans.map((plan) => (
                     <div 
-                        className="plan" 
+                        className="plan"
                         key={plan.plan_name} 
                         onClick={() => toggleMenu(plan)} 
                         style={{ cursor: 'pointer', backgroundColor: plan.color }} 
@@ -122,20 +174,23 @@ const Plans = () => {
             {selectedPlan && (
                 <div className={`side-menu ${isMenuOpen ? 'open' : ''}`}>
                     <h2>Menu de Compra</h2>
-                    <CheckoutForm
-                        selectedPlan={selectedPlan}
-                        userEmail={email}
-                        userName={nome}
-                        userWhatsapp={whatsapp}
-                        userPassword={password}
-                        navigate={navigate}
-                        onPaymentResult={handlePaymentResult}
-                        change_plan={change_plan}
-                    />                  
-                    <button onClick={() => setMenuOpen(false)}>Fechar</button>
+                    <Elements stripe={stripePromise}>
+                        <CheckoutForm
+                            selectedPlan={selectedPlan}
+                            userEmail={email}
+                            userName={nome}
+                            userWhatsapp={whatsapp}
+                            userPassword={password}
+                            navigate={navigate}
+                            onPaymentResult={handlePaymentResult}
+                            onPaymentStart={handlePaymentStart}
+                            change_plan={change_plan}
+                        />
+                    </Elements>               
+                    <button onClick={() => setMenuOpen(false)} disabled={isPaymentInProgress}>Fechar</button>
                     {paymentSuccess && (
                         <p style={{ color: 'green', fontSize: '18px', fontWeight: 'bold' }}>
-                            ✅ Pagamento realizado com sucesso!
+                            ✅ Pagamento realizado com sucesso! Você será redirecionado para a tela de login
                         </p>
                     )}
                     {paymentError && (
@@ -145,11 +200,20 @@ const Plans = () => {
                     )}
                 </div>
             )}
-            {showPopup && (
+            {showPopup && selectedPlan?.plan_id === currentPlan?.plan_id && (
+                <div className="popup">
+                    <p style={{ color: 'red', fontSize: '18px', fontWeight: 'bold' }}>
+                        ❌ Você já possui este plano. Selecione um plano diferente.
+                    </p>
+                    <button onClick={() => setShowPopup(false)}>Fechar</button>
+                </div>
+            )}
+            {showPopup && selectedPlan?.plan_id === 1 && selectedPlan?.plan_id !== currentPlan?.plan_id && (
                 <div className="popup">
                     <p style={{ color: 'green', fontSize: '18px', fontWeight: 'bold' }}>
                         ✅ Cadastro realizado com sucesso! Você será redirecionado para o login.
                     </p>
+                    <button onClick={() => setShowPopup(false)}>Fechar</button>
                 </div>
             )}
             <div className="disclaimer">                

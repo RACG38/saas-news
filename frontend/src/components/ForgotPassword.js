@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import '../styles/ForgotPassword.css'; // Certifique-se de ajustar o caminho para o seu arquivo de estilos
+import { useNavigate } from 'react-router-dom';
+import '../styles/ForgotPassword.css'; 
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
@@ -24,11 +26,14 @@ const ForgotPassword = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Erro ao solicitar recuperação de senha');
+                throw new Error(errorData.message || 'Erro ao solicitar recuperação de senha. Verifique o email digitado acima');
             }
 
-            const data = await response.json();
+            // const data = await response.json();
             setMessage('Instruções de redefinição de senha foram enviadas para o seu email.');
+            setTimeout(() => {
+                navigate('/verify-token');
+            }, 2000);
             setIsError(false);
         } catch (error) {
             setMessage(error.message);

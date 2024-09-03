@@ -11,13 +11,17 @@ body {
 
 }
 
+.content {
+
+    width: 100%;
+    height: 100%;
+}
+
 .dashboard {
     display: flex;
     flex-direction: row;
-    height: 100vh;
-    /* Garante que o dashboard ocupe 100% da altura da tela */
-    width: 100vw;
-    /* Garante que o dashboard ocupe 100% da largura da tela */
+    height: 100vh;    
+    width: 100vw;  
 
 }
 
@@ -355,5 +359,4 @@ body {
     border-color: #89b9ec; /* Altera a cor da borda ao passar o mouse */
     text-decoration: none;
 }
-
 
