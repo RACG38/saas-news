@@ -25,16 +25,14 @@ def delete_previous_day_news():
 
 @shared_task
 def fetch_news_for_stocks():
-
-    logger.debug("INICIO Fetch --->", datetime.now())
     current_hour = datetime.now().hour  # Verifica a hora atual
 
     if start_fetch_news <= current_hour < end_fetch_news:
         acoes = AcaoSelecionada.objects.all()
+        today_date = datetime.today().date()
 
         for acao in acoes:
             query = f'{acao.simbolo} OR {acao.nome}'
-            today_date = datetime.today().date()
 
             url = (
                 f'https://newsapi.org/v2/everything?q={query}'
@@ -75,98 +73,93 @@ def fetch_news_for_stocks():
 
                         # Converter a data de publicação para o formato DateTimeField do Django
                         data_publicacao = parse_datetime(published_at)
+                        
+                        # Verificar se a data de publicação é hoje
+                        if data_publicacao.date() == today_date:
+                            # Criar a nova notícia no banco de dados
+                            Noticia.objects.create(
+                                acao_selecionada=acao,
+                                fonte=article.get('source', {}).get('name', 'Fonte desconhecida'),
+                                conteudo=title,
+                                url=article.get('url', ''),
+                                data_publicacao=data_publicacao
+                            )
 
-                        # Criar a nova notícia no banco de dados
-                        Noticia.objects.create(
-                            acao_selecionada=acao,
-                            fonte=article.get('source', {}).get('name', 'Fonte desconhecida'),
-                            conteudo=title,
-                            url=article.get('url', ''),
-                            data_publicacao=data_publicacao
-                        )
-
-                        # Incrementar o contador de notícias existentes
-                        existing_news_count += 1
+                            # Incrementar o contador de notícias existentes
+                            existing_news_count += 1
             else:
                 error_message = news_data.get('message', 'Erro desconhecido ao buscar notícias.')
                 print(f"Erro ao buscar notícias para {acao.simbolo}: {error_message}")
-
-    logger.debug("FIM Fetch --->", datetime.now())
 
 
 @shared_task
 def send_daily_news_email(*args, **kwargs):
 
-    logger.debug("INICIO Send -->", datetime.now())
-    current_hour = datetime.now().hour  # Verifica a hora atual
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    css_path = os.path.join(base_dir, 'templates/styles/news_email.css')
 
-    if start_fetch_news <= current_hour < end_fetch_news:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        css_path = os.path.join(base_dir, 'templates/styles/news_email.css')
+    try:
+        with open(css_path, 'r') as css_file:
+            css_content = css_file.read()
+    except FileNotFoundError:
+        logger.error(f"Arquivo CSS não encontrado em: {css_path}")
+        css_content = ""
 
-        try:
-            with open(css_path, 'r') as css_file:
-                css_content = css_file.read()
-        except FileNotFoundError:
-            logger.error(f"Arquivo CSS não encontrado em: {css_path}")
-            css_content = ""
+    clientes = Cliente.objects.all()
 
-        clientes = Cliente.objects.all()
+    for cliente in clientes:
+        limite_noticias = cliente.plano.qtdade_noticias if cliente.plano else max_daily_news
+        acoes = AcaoSelecionada.objects.filter(cliente=cliente)
 
-        for cliente in clientes:
-            limite_noticias = cliente.plano.qtdade_noticias if cliente.plano else max_daily_news
-            acoes = AcaoSelecionada.objects.filter(cliente=cliente)
+        if not acoes.exists():
+            continue
 
-            if not acoes.exists():
-                continue
+        news_content = "<div class='container'>"
 
-            news_content = "<div class='container'>"
+        for acao in acoes:
+            noticias = Noticia.objects.filter(acao_selecionada=acao).order_by('-id')[:limite_noticias]
 
-            for acao in acoes:
-                noticias = Noticia.objects.filter(acao_selecionada=acao).order_by('-id')[:limite_noticias]
+            if noticias.exists():
+                news_content += f"<h2>{acao.simbolo} - {acao.nome}</h2><div class='news-cards'>"
+                
+                for noticia in noticias:
+                    data_formatada = noticia.data_publicacao.strftime('%d/%m/%Y %H:%M') if noticia.data_publicacao else 'Data desconhecida'
+                    news_content += f"""
+                    <div class="news-card">
+                        <strong>Fonte:</strong> {noticia.fonte}<br>
+                        <strong>Data de Publicação:</strong> {data_formatada}<br>
+                        <p>{noticia.conteudo}</p>
+                        <a href="{noticia.url}" target="_blank">Leia mais</a>
+                    </div>
+                    """
+                
+                news_content += "</div>"  # Fechando a div news-cards
 
-                if noticias.exists():
-                    news_content += f"<h2>{acao.simbolo} - {acao.nome}</h2><div class='news-cards'>"
-                    
-                    for noticia in noticias:
-                        data_formatada = noticia.data_publicacao.strftime('%d/%m/%Y %H:%M') if noticia.data_publicacao else 'Data desconhecida'
-                        news_content += f"""
-                        <div class="news-card">
-                            <strong>Fonte:</strong> {noticia.fonte}<br>
-                            <strong>Data de Publicação:</strong> {data_formatada}<br>
-                            <p>{noticia.conteudo}</p>
-                            <a href="{noticia.url}" target="_blank">Leia mais</a>
-                        </div>
-                        """
-                    
-                    news_content += "</div>"  # Fechando a div news-cards
+        news_content += "</div>"  # Fechando a div container
 
-            news_content += "</div>"  # Fechando a div container
-
-            if news_content:
-                subject = f"Notícias diárias das suas ações"
-                full_email_content = f"""
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>{css_content}</style>  <!-- CSS embutido diretamente no HTML -->
-                    <title>Notícias Diárias</title>
-                </head>
-                <body>
-                    {news_content}
-                </body>
-                </html>
-                """
-                send_mail(
-                    subject,
-                    '',  # Texto plano vazio
-                    'renan.acg7@gmail.com',
-                    [cliente.email],
-                    fail_silently=False,
-                    html_message=full_email_content
-                )
-    logger.debug("FIM Send --->", datetime.now())
+        if news_content:
+            subject = f"Notícias diárias das suas ações"
+            full_email_content = f"""
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>{css_content}</style>  <!-- CSS embutido diretamente no HTML -->
+                <title>Notícias Diárias</title>
+            </head>
+            <body>
+                {news_content}
+            </body>
+            </html>
+            """
+            send_mail(
+                subject,
+                '',  # Texto plano vazio
+                'renan.acg7@gmail.com',
+                [cliente.email],
+                fail_silently=False,
+                html_message=full_email_content
+            )    
 
 @shared_task
 def check_and_save_dividend_news():
@@ -236,9 +229,8 @@ def check_and_save_dividend_news():
                         data_publicacao=datetime.now()
                     )
                     
-                    noticia.save()
-        
-        logger.debug(noticia)
+                    noticia.save()                
+
     finally:
         # Fechando o navegador
         driver.quit()

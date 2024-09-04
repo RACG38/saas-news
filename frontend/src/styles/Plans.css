@@ -100,3 +100,8 @@
     border-color: #80bdff;
 }
 
+.loading-container p {
+    margin-top: 10px; /* Espaço entre o spinner e o texto */
+    font-size: 16px;
+    color: #f0f8ff;
+}

@@ -220,13 +220,22 @@ const Dashboard = () => {
             </div>
             <div className="content">                
                 <div className="stocks-section">
-                    <div className="letter-filter-container">
+                <div className="letter-filter-container">
                         <div className="letter-filter">
                             <span 
                                 className={`filter-letter ${showMyStocks ? 'active' : ''}`} 
                                 onClick={handleShowMyStocks}
                             >
                                 Minhas Ações
+                            </span>
+                            <span 
+                                className={`filter-letter ${!showMyStocks && filterLetter === '' ? 'active' : ''}`} 
+                                onClick={() => { 
+                                    setShowMyStocks(false); 
+                                    setFilterLetter(''); 
+                                }}
+                            >
+                                Mostrar Todas
                             </span>
                             {availableLetters.map(letter => (
                                 <span 
@@ -239,6 +248,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                     </div>
+
 
                     <p style={{ textAlign: 'left', color: '#ffffff', margin: '70px 0 70px 20px', fontSize: '22px' }}>
                         Quantidade de empresas exibidas: {filteredStocks.length}

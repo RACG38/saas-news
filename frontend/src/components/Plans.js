@@ -44,6 +44,7 @@ const Plans = () => {
     const [paymentError, setPaymentError] = useState(null);  
     const [currentPlan, setCurrentPlan] = useState(null); 
     const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -80,6 +81,7 @@ const Plans = () => {
     }, [email]);
 
     const handleFreeRegistration = async (plan) => {
+        setIsLoading(true);  // Ativar o spinner
         try {
             const response = await fetch('http://localhost:8000/auth/plans/', {
                 method: 'POST',
@@ -102,13 +104,15 @@ const Plans = () => {
             if (!response.ok) {
                 throw new Error(responseText);
             }           
-                        
+            
+            setIsLoading(false);
             setShowPopup(true);
     
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
         } catch (error) {
+            setIsLoading(false);
             console.error('Erro ao registrar o plano Free:', error.message);
         }
     };
@@ -128,7 +132,7 @@ const Plans = () => {
     };
 
     const toggleMenu = (plan) => {
-
+        
         if (plan.plan_id === currentPlan?.plan_id) {
             setShowPopup(true);
             setMenuOpen(false);  // Fechar o menu
@@ -148,10 +152,8 @@ const Plans = () => {
         setSelectedPlan(plan);
     };
     
-    
-    
     return (
-        <div className="plans-container">
+        <div className="plans-container">            
             <h1>{change_plan ? 'Escolha um novo plano' : 'Escolha o plano que deseja adquirir'}</h1>
             <div className="plans">
                 {plans.map((plan) => (
@@ -222,6 +224,12 @@ const Plans = () => {
                 <p>(1) Todas as notícias são enviadas diariamente, todos os dias, após o fechamento do pregão da B3.</p>
                 <p>(2) Eventos em tempo real serão enviados de segunda a sexta, exceto feriados, durante o pregão diário da B3.</p>
             </div>
+            {isLoading && ( // Spinner aparece enquanto isLoading for true
+                <div className="loading-container">
+                    <div className="spinner"></div>
+                    <p>Carregando Plano Free</p>
+                </div>
+            )}
         </div>
     );
 }

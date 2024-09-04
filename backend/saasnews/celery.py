@@ -22,7 +22,7 @@ app.autodiscover_tasks(['noticias'])
 app.conf.beat_schedule = {
     'fetch-and-send-daily-news': {
         'task': 'noticias.tasks.fetch_and_send_news_chain',  # Referência à task encadeada
-        'schedule': crontab(minute='*'),
+        'schedule': crontab(hour=0, minute=0),
     },
     'monitor-news-every-hour': {
         'task': 'noticias.tasks.monitor_news_for_pro_clients',
