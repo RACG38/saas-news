@@ -26,15 +26,13 @@ body {
 }
 
 .sidebar {
-    width: 20vw;
-    /* Use vw para garantir que a sidebar se ajuste corretamente */
+    width: 40vw;
     height: 100vh;
     background-color: #4a4956;
     padding: 30px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     color: white;
-    margin-left: 50px;
-    /* Adiciona margem à esquerda para ajustar a posição */
+    margin-left: 50px;    
     margin-top: 45px;
 }
 
@@ -359,4 +357,23 @@ body {
     border-color: #89b9ec; /* Altera a cor da borda ao passar o mouse */
     text-decoration: none;
 }
+
+.sidebar-button.cancel-subscription {
+    background-color: #976ee4; /* Cor de fundo do botão (tom de vermelho tomate) */
+    color: white;
+    padding: 15px;
+    margin-top: 200px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.sidebar-button.cancel-subscription:hover {
+    background-color: #5418e0; /* Cor de fundo ao passar o mouse (tom de vermelho mais escuro) */
+}
+
 

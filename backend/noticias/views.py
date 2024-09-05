@@ -72,20 +72,21 @@ def enviar_email_reset_token(cliente, token_obj):
 
 def enviar_email_confirmacao(cliente, payment_method, changeplan_flag):
 
+    delta = datetime.today().date() - cliente.data_ultimo_pagamento
+
     if changeplan_flag == True:
         email_template = 'email/change_plan.html'
         subject = f'{cliente.nome}, a mudança do seu plano foi concluída'
 
 
-    elif cliente.data_ultimo_pagamento == datetime.today().date():
+    elif delta.days < 1:        
         email_template = 'email/welcome.html'
         subject = f'{cliente.nome}, bem-vindo(a) ao Nosso Serviço!'
 
     else:
         email_template = 'email/renewal.html'
-        subject = f'{cliente.nome}, sua renovação do Plano {cliente.plano} foi concluída'
+        subject = f'{cliente.nome}, sua renovação do Plano {cliente.plano} foi efetuada'
 
-    
     # Contexto para o e-mail
     email_context = {
         'cliente': cliente,
@@ -94,8 +95,8 @@ def enviar_email_confirmacao(cliente, payment_method, changeplan_flag):
         'data_renovacao_pagamento': (timezone.now().date() + timezone.timedelta(days=30)).strftime('%m/%Y'),
         'numero_cartao': payment_method.get('last4'),
         'data_vencimento':  f"{payment_method.get('exp_month'):02d}/{str(payment_method.get('exp_year'))[-2:]}",  # MM/YY
-    }
-    
+    }   
+
     # Renderizar a mensagem HTML
     html_message = render_to_string(email_template, email_context)
     plain_message = strip_tags(html_message)
@@ -367,7 +368,6 @@ class PlansView(APIView):
 
     def confirm_payment(self, request, token_obj):
         try:
-
             # Acessando os dados enviados pelo frontend
             payment_method = request.data.get('payment_method')            
             email = request.data.get('email')            
@@ -377,12 +377,11 @@ class PlansView(APIView):
 
             # Escolher o Price ID baseado no plano            
             if plan_id == 2:  
-                price_id = "price_1PqRMXFoYdflkG65i6tWga0K" # Plano Basic
+                price_id = "price_1PqRMXFoYdflkG65i6tWga0K"  # Plano Basic
             else:  
-                price_id = "price_1PqRMwFoYdflkG65l1ac87Hd" # Plano Pro        
+                price_id = "price_1PqRMwFoYdflkG65l1ac87Hd"  # Plano Pro        
 
             if email and plano and token_obj:
-            
                 # Recupera o cliente no banco de dados
                 cliente, _ = Cliente.objects.update_or_create(
                     email=email,
@@ -394,20 +393,34 @@ class PlansView(APIView):
                 )              
 
             if cliente:
-
-                # Anexar o PaymentMethod ao cliente no Stripe, se ainda não estiver anexado
-                stripe.PaymentMethod.attach(
-                    payment_method.get('id'),
+                # Obter os métodos de pagamento do cliente no Stripe
+                existing_payment_methods = stripe.PaymentMethod.list(
                     customer=cliente.stripe_customer_id,
-                )
-            
-                # Definir o PaymentMethod como padrão para o cliente
-                stripe.Customer.modify(
-                    cliente.stripe_customer_id,
-                    invoice_settings={'default_payment_method': payment_method.get('id')},
+                    type="card"  # Alterar para o tipo de método de pagamento usado
                 )
 
-            
+                # Verificar se já existe um método de pagamento com o mesmo fingerprint
+                new_payment_method_fingerprint = payment_method.get('card', {}).get('fingerprint')
+                method_exists = False
+
+                for method in existing_payment_methods.data:
+                    if method.card.fingerprint == new_payment_method_fingerprint:
+                        method_exists = True
+                        break
+
+                if not method_exists:
+                    # Anexar o PaymentMethod ao cliente no Stripe, se ainda não estiver anexado
+                    stripe.PaymentMethod.attach(
+                        payment_method.get('id'),
+                        customer=cliente.stripe_customer_id,
+                    )
+
+                    # Definir o PaymentMethod como padrão para o cliente
+                    stripe.Customer.modify(
+                        cliente.stripe_customer_id,
+                        invoice_settings={'default_payment_method': payment_method.get('id')},
+                    )
+
                 # Verificar se o cliente já possui uma assinatura ativa
                 existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
 
@@ -423,7 +436,6 @@ class PlansView(APIView):
                     default_payment_method=payment_method.get('id'),
                     expand=['latest_invoice.payment_intent'],
                 )
-            
 
             return Response({
                 'success': True,
@@ -435,7 +447,7 @@ class PlansView(APIView):
 
         except Exception as e:
             return Response({'error': f"Erro inesperado ao atualizar o usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-       
+
     def get_card_info(self, request):
 
         try:
@@ -549,5 +561,29 @@ class DashboardView(APIView):
 
         return Response({"message": "Ações atualizadas com sucesso!"}, status=status.HTTP_200_OK)
 
+    def delete(self, request):
+
+        data = json.loads(request.body)
+        email = data.get('email')  
+
+        try:
+            cliente = Cliente.objects.get(email=email)              
+            
+            # Verificar se o cliente já possui uma assinatura ativa
+            existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
+
+            if existing_subscriptions.data:
+                # Cancelar a assinatura existente
+                for subscription in existing_subscriptions.data:
+                    stripe.Subscription.delete(subscription.id)       
+            
+            # Excluir o usuário do banco de dados
+            cliente.delete()
+
+            return JsonResponse({'status': 'success', 'message': 'Assinatura cancelada e usuário excluído com sucesso.'})
+        except Cliente.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Usuário não encontrado.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
     

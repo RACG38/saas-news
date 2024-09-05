@@ -38,6 +38,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showLimitModal, setShowLimitModal] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false); // Novo estado para o modal de cancelamento
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -142,9 +143,6 @@ const Dashboard = () => {
     };
 
     const handleChangePlanClick = () => {
-        
-        // const { firstName, email, whatsapp, password } = userData;
-        
         navigate('/plans', { 
             state: { 
                 nome: userData.cliente.nome, 
@@ -181,6 +179,41 @@ const Dashboard = () => {
     })
     .sort((a, b) => a.simbolo.localeCompare(b.simbolo));
 
+    const handleCancelSubscription = async () => {
+        if (!userData || !userData.cliente) {
+            console.error('Erro: Dados do cliente não encontrados');
+            return;
+        }
+    
+        try {
+            const response = await fetch(`http://localhost:8000/auth/dashboard/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: userData.cliente.email }),  // Enviando o clienteId para o backend
+            });
+    
+            if (response.ok) {
+                localStorage.removeItem('email');
+                navigate('/login');  // Redirecionar após o cancelamento
+            } else {
+                console.error('Erro ao cancelar a assinatura');
+            }
+        } catch (error) {
+            console.error('Erro ao cancelar a assinatura:', error);
+        }
+    };
+       
+
+    const handleOpenCancelModal = () => {
+        setShowCancelModal(true);
+    };
+
+    const handleCloseCancelModal = () => {
+        setShowCancelModal(false);
+    };
+
     if (loading) {
         return (
             <div className="spinner-container">
@@ -197,11 +230,6 @@ const Dashboard = () => {
                 <p><strong>Plano </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>               
                 <p><strong>Quantidade de Ativos:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_ativos : 'N/A'}</p>
                 <p><strong>Quantidade de Notícias:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_noticias : 'N/A'}</p>
-                <p><strong>Email:</strong> {userData.cliente && userData.cliente.plano ? (userData.cliente.plano.email_opt ? 'Sim' : 'Não') : 'N/A'}</p>
-                <p><strong>WhatsApp:</strong> {userData.cliente && userData.cliente.plano ? (userData.cliente.plano.whatsapp_opt ? 'Sim' : 'Não') : 'N/A'}</p>
-                <p><strong>Tempo Real:</strong> {userData.cliente && userData.cliente.plano ? (userData.cliente.plano.temporeal ? 'Sim' : 'Não') : 'N/A'}</p>
-
-                {error && <p className="error-message">{error}</p>} 
 
                 <div style={{ flexGrow: 1 }}></div>
 
@@ -212,6 +240,9 @@ const Dashboard = () => {
                 <p onClick={handleChangePlanClick} className="upgrade-plan-link">
                     Quero mudar o meu plano
                 </p>
+                <button onClick={handleOpenCancelModal} className="sidebar-button cancel-subscription">
+                    Cancelar Assinatura
+                </button>
                             
                 <div className="logout-container" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faSignOutAlt} size="2x" className="logout-icon" />
@@ -220,7 +251,7 @@ const Dashboard = () => {
             </div>
             <div className="content">                
                 <div className="stocks-section">
-                <div className="letter-filter-container">
+                    <div className="letter-filter-container">
                         <div className="letter-filter">
                             <span 
                                 className={`filter-letter ${showMyStocks ? 'active' : ''}`} 
@@ -248,7 +279,6 @@ const Dashboard = () => {
                             ))}
                         </div>
                     </div>
-
 
                     <p style={{ textAlign: 'left', color: '#ffffff', margin: '70px 0 70px 20px', fontSize: '22px' }}>
                         Quantidade de empresas exibidas: {filteredStocks.length}
@@ -285,6 +315,19 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
+
+            {/* Modal de cancelamento de assinatura */}
+            {showCancelModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <h2>Você realmente deseja cancelar o plano {userData?.cliente?.plano?.nome}?</h2>
+                        <div className="modal-actions">
+                            <button onClick={handleCancelSubscription}>Sim</button>
+                            <button onClick={handleCloseCancelModal}>Não</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showSuccessModal && (
                 <div className="modal">
