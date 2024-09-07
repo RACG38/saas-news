@@ -93,10 +93,11 @@ def enviar_email_confirmacao(cliente, payment_method, changeplan_flag):
         'plano': cliente.plano,
         'valor_plano': cliente.plano.valor,  
         'data_renovacao_pagamento': (timezone.now().date() + timezone.timedelta(days=30)).strftime('%m/%Y'),
-        'numero_cartao': payment_method.get('last4'),
-        'data_vencimento':  f"{payment_method.get('exp_month'):02d}/{str(payment_method.get('exp_year'))[-2:]}",  # MM/YY
+        'numero_cartao': payment_method.get('card').get('last4'),
+        'data_vencimento':  f"{payment_method.get('card').get('exp_month'):02d}/{str(payment_method.get('card').get('exp_year'))[-2:]}",  # MM/YY
     }   
 
+    
     # Renderizar a mensagem HTML
     html_message = render_to_string(email_template, email_context)
     plain_message = strip_tags(html_message)
@@ -193,9 +194,28 @@ class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
+        plano = request.data.get('plano_nome')
 
         try:
             cliente = Cliente.objects.get(email=email)
+
+            if plano == "Free":
+
+                # Verificar se o cliente já possui uma assinatura ativa
+                existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
+
+                if existing_subscriptions.data:
+                    # Cancelar a assinatura existente
+                    for subscription in existing_subscriptions.data:
+                        stripe.Subscription.delete(subscription.id)  
+
+                # Atualizar o plano do cliente para o plano "Free"
+                cliente.plano = Plano.objects.get(nome_plano='Free')
+                cliente.data_ultimo_pagamento = timezone.now()
+                cliente.save()  
+
+                enviar_email_free(cliente, True) 
+                
         
             if check_password(password, cliente.password):
                 return Response({
@@ -208,46 +228,20 @@ class LoginView(APIView):
             return Response({"message": "Email ou senha incorretos."}, status=status.HTTP_401_UNAUTHORIZED)
         
 class RegisterView(APIView):
+    
     def post(self, request):
-        try:
-            nome = request.data.get('username')
-            email = request.data.get('email')
-            whatsapp = request.data.get('whatsapp')
-            password = request.data.get('password')
 
-            if not nome or not email or not password:
-                raise ValidationError("Todos os campos são obrigatórios.")
-
-            cliente_existente = Cliente.objects.filter(email=email).exists()
-
-            if cliente_existente:
-                return Response({"redirect": "login", "message": "Cliente já cadastrado. Redirecionando para o login."}, status=status.HTTP_200_OK)
-
-            # Se o cliente não existir, prosseguir para a seleção de planos
-            return Response({"redirect": "plans", "message": "Selecione um plano para concluir o cadastro."}, status=status.HTTP_200_OK)
-
-        except ValidationError as e:
-            return Response({"message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            
-            return Response({"message": "Erro interno do servidor"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class PlansView(APIView):
-
-    def post(self, request, *args, **kwargs):      
-        
         try:
 
-            plan_id = request.data.get('plan_id')    
+            plan_id = request.data.get('plan_id')                       
             action = request.data.get('action')
-            email = request.data.get('email')                
-            nome = request.data.get('nome')             
-            whatsapp = request.data.get('whatsapp')
-            password = request.data.get('password')            
-            payment_method = request.data.get('payment_method')  
-            change_plan = request.data.get('change_plan')                
-            
+            email = request.data.get('email')                               
+            nome = request.data.get('nome')                    
+            whatsapp = request.data.get('whatsapp')            
+            password = request.data.get('password')                 
+            change_plan = request.data.get('change_plan') 
+                 
+
             # Tentar recuperar o cliente do banco de dados
             cliente, created = Cliente.objects.get_or_create(
                 email=email,
@@ -258,7 +252,8 @@ class PlansView(APIView):
                     'data_ultimo_pagamento': timezone.now(),                                        
                     
                 }
-            )                     
+            )     
+                   
 
             if created: # Verifica se é primeiro acesso
 
@@ -281,33 +276,42 @@ class PlansView(APIView):
                         metadata={
                             'whatsapp': whatsapp,
                         }
-                    )               
+                    )   
 
             if cliente: # Verifica se o cliente existe no banco de dados
 
+                if action == 'get_current_plan':    
+
+                    return JsonResponse({
+                        'plan_id': cliente.plano.id,                
+                    })  
+                
+                if action == 'get_card_info' and email:                          
+
+                    return self.get_card_info(request) 
+
+
                 customer = stripe.Customer.list(email=email).data[0] # Verifica se já existe um cadastro do cliente no Stripe
                 cliente.stripe_customer_id = customer.id # Atualizar o cliente local com o ID do Stripe
-                cliente.save()
+                cliente.save()      
 
-                # Criar ou atualizar o token de redefinição de senha no banco de dados
-                token_obj, created = Token.objects.update_or_create(
-                    cliente=cliente,
-                    defaults={
-                        'token_id': ''.join(random.choices(string.digits, k=6)),  # Gera uma string de 6 dígitos
-                        'data_criacao': timezone.now(),  # Subtrai 3 horas da data de criação
-                        'data_expiracao': timezone.now() + timedelta(hours=1)
-                    }
-                )
+                
+                if plan_id == 1:  
 
-                if action == 'free_selected':  
+                    # Criar ou atualizar o token de redefinição de senha no banco de dados
+                    token_obj, created = Token.objects.update_or_create(
+                        cliente=cliente,
+                        defaults={
+                            'token_id': ''.join(random.choices(string.digits, k=6)),  # Gera uma string de 6 dígitos
+                            'data_criacao': timezone.now(),  # Subtrai 3 horas da data de criação
+                            'data_expiracao': timezone.now() + timedelta(hours=1)
+                        }
+                    ) 
 
                     # Atualiza o plano do cliente para o Free
                     cliente, _ = Cliente.objects.update_or_create(
                         email=email,
                             defaults={
-                                # 'nome': nome,
-                                # 'whatsapp': whatsapp,
-                                # 'password': make_password(password),
                                 'plano': get_object_or_404(Plano, id=plan_id),
                                 'data_ultimo_pagamento': timezone.now(),
                                 'token': token_obj
@@ -330,32 +334,15 @@ class PlansView(APIView):
                     'success': True,
                     'message': "Cliente cadastrado no plano Free",
                 
-                }, status=status.HTTP_200_OK)   
+                }, status=status.HTTP_200_OK)  
+                else:
 
-                if action == 'get_current_plan':    
+                    return Response({
+                        'success': True,
+                        'message': "Cliente cadastrado banco de dados",
 
-                    return JsonResponse({
-                        'plan_id': cliente.plano.id,                
-                    })
-            
-                if action == 'confirm_payment':
-                    
-                    response = self.confirm_payment(request, token_obj)
-
-                    if response.status_code == 200:      
-                        
-                        cliente.refresh_from_db()          
-                        
-                        enviar_email_confirmacao(cliente, payment_method, change_plan) # Chamada para enviar o e-mail após confirmação bem-sucedida do pagamento
-
-                    return response
-                
-            if action == 'get_card_info' and email:                          
-
-                return self.get_card_info(request)
-            
-              
-                       
+                    }, status=status.HTTP_200_OK)         
+                                 
 
         except ValidationError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -364,89 +351,9 @@ class PlansView(APIView):
             return Response({"message": f"Erro no Stripe: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
-            return Response({"message": f"Erro interno do servidor: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": f"Erro interno do servidor: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)            
 
-    def confirm_payment(self, request, token_obj):
-        try:
-            # Acessando os dados enviados pelo frontend
-            payment_method = request.data.get('payment_method')            
-            email = request.data.get('email')            
-            plan_id = request.data.get('plan_id')            
-
-            plano = get_object_or_404(Plano, id=plan_id) 
-
-            # Escolher o Price ID baseado no plano            
-            if plan_id == 2:  
-                price_id = "price_1PqRMXFoYdflkG65i6tWga0K"  # Plano Basic
-            else:  
-                price_id = "price_1PqRMwFoYdflkG65l1ac87Hd"  # Plano Pro        
-
-            if email and plano and token_obj:
-                # Recupera o cliente no banco de dados
-                cliente, _ = Cliente.objects.update_or_create(
-                    email=email,
-                    defaults={
-                        'plano': plano,
-                        'data_ultimo_pagamento': timezone.now(),
-                        'token': token_obj
-                    }
-                )              
-
-            if cliente:
-                # Obter os métodos de pagamento do cliente no Stripe
-                existing_payment_methods = stripe.PaymentMethod.list(
-                    customer=cliente.stripe_customer_id,
-                    type="card"  # Alterar para o tipo de método de pagamento usado
-                )
-
-                # Verificar se já existe um método de pagamento com o mesmo fingerprint
-                new_payment_method_fingerprint = payment_method.get('card', {}).get('fingerprint')
-                method_exists = False
-
-                for method in existing_payment_methods.data:
-                    if method.card.fingerprint == new_payment_method_fingerprint:
-                        method_exists = True
-                        break
-
-                if not method_exists:
-                    # Anexar o PaymentMethod ao cliente no Stripe, se ainda não estiver anexado
-                    stripe.PaymentMethod.attach(
-                        payment_method.get('id'),
-                        customer=cliente.stripe_customer_id,
-                    )
-
-                    # Definir o PaymentMethod como padrão para o cliente
-                    stripe.Customer.modify(
-                        cliente.stripe_customer_id,
-                        invoice_settings={'default_payment_method': payment_method.get('id')},
-                    )
-
-                # Verificar se o cliente já possui uma assinatura ativa
-                existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
-
-                if existing_subscriptions.data:
-                    # Cancelar a assinatura existente
-                    for subscription in existing_subscriptions.data:
-                        stripe.Subscription.delete(subscription.id)            
-
-                # Criar a nova assinatura no Stripe
-                subscription = stripe.Subscription.create(
-                    customer=cliente.stripe_customer_id,
-                    items=[{'price': price_id}],
-                    default_payment_method=payment_method.get('id'),
-                    expand=['latest_invoice.payment_intent'],
-                )
-
-            return Response({
-                'success': True,
-                'message': "Pagamento e assinatura confirmados com sucesso!",                
-            }, status=status.HTTP_200_OK)
-
-        except stripe.error.StripeError as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        except Exception as e:
-            return Response({'error': f"Erro inesperado ao atualizar o usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class CheckoutView(APIView):
 
     def get_card_info(self, request):
 
@@ -490,6 +397,150 @@ class PlansView(APIView):
 
         except Exception as e:
             return Response({"message": f"Erro interno do servidor: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request):
+        try:
+            # Acessando os dados enviados pelo frontend
+            payment_method = request.data.get('payment_method')
+            email = request.data.get('email')
+            plan_id = request.data.get('plan_id')
+            change_plan = request.data.get('change_plan_flag')
+            cpf = request.data.get('cpf')
+            address_data = request.data.get('address')
+            action = request.data.get('action')
+
+            if action == "get_card_info":
+                return self.get_card_info(request)
+
+            if address_data:
+                # Extrair os campos de endereço do dicionário
+                logradouro = address_data.get('logradouro')
+                numero = address_data.get('numero')
+                complemento = address_data.get('complemento')
+                cidade = address_data.get('cidade')
+                bairro = address_data.get('bairro')
+                estado = address_data.get('estado')
+                cep = address_data.get('cep')
+
+            plano = get_object_or_404(Plano, id=plan_id)
+
+            # Escolher o Price ID baseado no plano
+            if plan_id == 2:
+                price_id = "price_1PqRMXFoYdflkG65i6tWga0K"  # Plano Basic
+            else:
+                price_id = "price_1PqRMwFoYdflkG65l1ac87Hd"  # Plano Pro
+
+            if email and plano:
+                # Recupera o cliente no banco de dados
+                cliente, _ = Cliente.objects.update_or_create(
+                    email=email,
+                    defaults={
+                        'plano': plano,
+                        'data_ultimo_pagamento': timezone.now(),
+                    }
+                )
+
+            # Criar ou atualizar o token de redefinição de senha no banco de dados
+            token_obj, created = Token.objects.update_or_create(
+                cliente=cliente,
+                defaults={
+                    'token_id': ''.join(random.choices(string.digits, k=6)),  # Gera uma string de 6 dígitos
+                    'data_criacao': timezone.now(),
+                    'data_expiracao': timezone.now() + timedelta(hours=1)
+                }
+            )
+
+            cliente.token = token_obj
+            cliente.save()
+
+            if cliente:
+                # Criar ou atualizar o objeto de endereço
+                endereco, created = Endereco.objects.update_or_create(
+                    cep=cep,  # Usar o CEP como chave de busca para criar ou atualizar
+                    defaults={
+                        'logradouro': logradouro,
+                        'numero': numero,
+                        'complemento': complemento,
+                        'cidade': cidade,
+                        'bairro': bairro,
+                        'estado': estado,
+                    }
+                )
+
+                if created:
+                    cliente.cpf = cpf
+                    cliente.endereco = endereco
+                    cliente.save()
+
+                # Verificar se é um método de pagamento salvo (apenas o id é fornecido)
+                if 'id' in payment_method:
+                    # Se for um cartão salvo, recupera o PaymentMethod completo no Stripe
+                    payment_method = stripe.PaymentMethod.retrieve(payment_method['id'])
+                    payment_method_id = payment_method['id']
+                else:
+                    # Caso contrário, cria um novo método de pagamento
+                    new_payment_method_fingerprint = payment_method.get('card', {}).get('fingerprint')
+                    existing_payment_methods = stripe.PaymentMethod.list(
+                        customer=cliente.stripe_customer_id,
+                        type="card"
+                    )
+
+                    method_exists = False
+                    customer = stripe.Customer.retrieve(cliente.stripe_customer_id)
+                    default_payment_method_id = customer.invoice_settings.default_payment_method
+
+                    for method in existing_payment_methods.data:
+                        # Se o fingerprint é o mesmo e não for o método de pagamento padrão, excluí-lo
+                        if method.card.fingerprint == new_payment_method_fingerprint and method.id != default_payment_method_id:
+                            stripe.PaymentMethod.detach(method.id)
+
+                    if not method_exists:
+                        # Anexar o PaymentMethod ao cliente no Stripe, se ainda não estiver anexado
+                        stripe.PaymentMethod.attach(
+                            payment_method.get('id'),
+                            customer=cliente.stripe_customer_id,
+                        )
+                    
+                    # Usa o novo PaymentMethod criado
+                    payment_method_id = payment_method.get('id')
+
+                    # Definir o PaymentMethod como padrão para o cliente
+                    stripe.Customer.modify(
+                        cliente.stripe_customer_id,
+                        invoice_settings={'default_payment_method': payment_method_id},
+                    )
+
+                # Verificar se o cliente já possui uma assinatura ativa
+                existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
+
+                if existing_subscriptions.data:
+                    # Cancelar a assinatura existente
+                    for subscription in existing_subscriptions.data:
+                        stripe.Subscription.delete(subscription.id)
+
+                # Criar a nova assinatura no Stripe
+                subscription = stripe.Subscription.create(
+                    customer=cliente.stripe_customer_id,
+                    items=[{'price': price_id}],
+                    default_payment_method=payment_method_id,
+                    expand=['latest_invoice.payment_intent'],
+                )
+
+                cliente.refresh_from_db()
+
+                # Enviar e-mail de confirmação com os detalhes do cartão salvo ou novo
+                enviar_email_confirmacao(cliente, payment_method, change_plan)
+
+            return Response({
+                'success': True,
+                'message': "Pagamento e assinatura confirmados com sucesso!",
+            }, status=status.HTTP_200_OK)
+
+        except stripe.error.StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as e:
+            return Response({'error': f"Erro inesperado ao atualizar o usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class DashboardView(APIView):
 
@@ -585,5 +636,8 @@ class DashboardView(APIView):
             return JsonResponse({'status': 'error', 'message': 'Usuário não encontrado.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+
 
     

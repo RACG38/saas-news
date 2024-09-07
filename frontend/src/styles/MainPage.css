@@ -1,0 +1,214 @@
+/* Estilos Gerais */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;  
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Centraliza o conteúdo */
+.container {
+  width: 90%;
+  margin: 0 auto;
+  max-width: 1200px;
+  text-align: center;  
+}
+
+/* Espaçamento para evitar que o texto seja cortado pelo cabeçalho */
+.intro-section {
+  padding-top: 80px; /* Adiciona espaçamento para evitar que o texto fique cortado pelo cabeçalho */
+}
+
+/* Cabeçalho com Login */
+header {
+  background-color: #1c1e3e;
+  color: white;
+  padding: 15px 0;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+header h1 {
+  font-size: 1.8rem;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+nav ul li a:hover {
+  text-decoration: underline;
+}
+
+/* Seção de Boas-vindas */
+.intro-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.intro-section p {
+  font-size: 1.2rem;
+  margin-top: 10px;
+  color: #fff !important;
+}
+
+/* Seção de Planos */
+.pricing-section {
+  background-color: #fff;
+  padding: 60px 0;
+}
+
+.pricing-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
+
+/* Estilos da tabela de preços */
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.pricing-table th, .pricing-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.pricing-table th {
+  background-color: #f4f4f9;
+  font-weight: bold;
+}
+
+.pricing-table td {
+  vertical-align: middle;
+}
+
+/* Estilo para o ícone de check */
+.check-icon {
+  color: #4caf50; /* Verde claro */
+  font-size: 18px;
+}
+
+/* Centraliza o texto */
+.pricing-table td, .pricing-table th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Estilos dos botões de plano */
+.plan-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Botões para cada plano com cores verdes */
+.plan-buttons .btn {
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  background-color: #28a745; /* Cor verde padrão */
+  transition: transform 0.3s ease, background-color 0.3s ease; /* Transição suave */
+}
+
+/* Diferentes tonalidades de verde para cada plano */
+.btn-free {
+  background-color: #349e4d !important; /* Verde para plano Free */
+  color: #fff !important;
+}
+
+.btn-basic {
+  background-color: #1c1a7c !important; /* Azul para plano Basic */
+  color: #fff !important;
+}
+
+.btn-pro {
+  background-color: #7a78eb !important; /* Azul mais claro para plano Pro */
+  color: #fff !important;
+}
+
+.plan-buttons .btn:hover {
+  transform: scale(1.1); /* Aumenta o tamanho do botão ao passar o mouse */
+  background-color: #1c7430 !important; /* Cor verde mais escura ao passar o mouse */
+}
+
+/* Estilos do Footer */
+footer {
+  background-color: #1c1e3e;
+  color: white;
+  padding: 20px 0;
+  margin-top: auto;
+}
+
+footer p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .pricing-table {
+    font-size: 0.9rem;
+  }
+
+  .plan-buttons .btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
+.current-plan-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.current-plan-free {
+  margin-left: 15%;
+}
+
+.current-plan-basic {
+  margin-left: 50%;
+}
+
+.current-plan-pro {
+  margin-left: 85%;
+}
+
+.current-plan-label {
+  font-weight: bold;
+  color: green;
+  font-size: 16px;
+}

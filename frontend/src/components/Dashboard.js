@@ -39,11 +39,21 @@ const Dashboard = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showLimitModal, setShowLimitModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false); // Novo estado para o modal de cancelamento
-    const navigate = useNavigate();
+    const navigate = useNavigate();    
 
     useEffect(() => {
         fetchImages();
     }, [navigate]);
+
+    const getPlanoId = (planName) => {
+        const planMap = {
+          'Free': 1,
+          'Basic': 2,
+          'Pro': 3
+        };
+      
+        return planMap[planName] || null;  // Retorna o id ou null se o nome não for encontrado
+      };
 
     const fetchImages = async () => {
         const userId = localStorage.getItem('userId');
@@ -143,16 +153,18 @@ const Dashboard = () => {
     };
 
     const handleChangePlanClick = () => {
-        navigate('/plans', { 
+        
+        navigate('/mainpage', { 
             state: { 
                 nome: userData.cliente.nome, 
                 email: userData.cliente.email, 
                 whatsapp: userData.cliente.whatsapp, 
-                password: userData.cliente.password, 
+                password: userData.cliente.password,
+                plano_id: getPlanoId(userData.cliente.plano.nome), 
                 change_plan: true 
             } 
         });
-    };
+    };    
 
     const getAvailableLetters = () => {
         const letters = new Set();

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation  } from 'react-router-dom';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -8,12 +8,15 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
     const [loading, setLoading] = useState(false); // Estado para o carregamento
-
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const { selectedPlanName } = location.state || {};
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true); // Ativa o carregamento
+        
         try {
             const response = await fetch('http://localhost:8000/auth/login/', {
                 method: 'POST',
@@ -23,6 +26,7 @@ const Login = () => {
                 body: JSON.stringify({
                     email: email,
                     password: password,
+                    plano_nome: selectedPlanName
                 }),
             });
 
@@ -81,7 +85,7 @@ const Login = () => {
                 {/* <button className="facebook-login">Continue com Facebook</button> */}
                 {/* <button className="google-login">Continue com Google</button> */}
             </div>
-            <p>Não tem uma conta? <Link to="/register">Cadastre-se</Link></p>
+            {/* <p>Não tem uma conta? <Link to="/register">Cadastre-se</Link></p> */}
             {loading && (
                 <div className="loading-bar">
                     <div className="loading-bar-progress"></div>

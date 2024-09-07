@@ -1,0 +1,11 @@
+body, html {
+    display: flex;
+    height: 100vh;              /* Altura da viewport completa */
+    background-color: #291968;  /* Cor de fundo */
+    margin: 0;
+    padding-right: 50px;        /* Espaçamento à direita */
+    background-image: url(https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/16307-b31032316e6e88916f46f0718cf9328c.webp);
+    background-position: 50% 50%;
+    background-size: cover;
+    /* background-repeat: no-repeat; */
+}

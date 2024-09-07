@@ -1,27 +1,17 @@
-/* Container principal que cobre a tela inteira */
-body {
-    display: flex;
-    justify-content: flex-end; /* Alinha o contêiner à direita */
-    align-items: center;       /* Alinhamento vertical */
-    height: 100vh;             /* Altura da viewport completa */
-    background-color: #291968; /* Cor de fundo */
-    margin: 0;                 /* Remove margens padrão do body */
-    padding-right: 50px;       /* Adiciona espaçamento à direita */
-    background-image: url(https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/16307-b31032316e6e88916f46f0718cf9328c.webp);
-    background-position: 50% 50%;
-    background-size: cover;
-    background-repeat: no-repeat;
+@import 'Global.css';
 
-}
-
+/* Estilos específicos para a caixa de login */
 .login-container {
-    max-width: 500px;        /* Aumenta o tamanho máximo da caixa */
-    padding: 40px;           /* Espaçamento interno maior */
-    border: 1px solid #ccc;  /* Borda da caixa */
-    border-radius: 8px;      /* Cantos arredondados */
-    background-color: #fff;  /* Cor de fundo da caixa */
-    text-align: center;      /* Alinhamento de texto centralizado */
-    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Sombra para dar destaque */
+    max-width: 500px;          /* Define a largura máxima da caixa de login */
+    padding: 40px;             /* Espaçamento interno */
+    border: 1px solid #ccc;    /* Borda ao redor da caixa */
+    border-radius: 8px;        /* Arredondamento */
+    background-color: #fff;    /* Fundo da caixa */
+    text-align: center;        /* Alinha o texto dentro da caixa */
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Adiciona sombra */
+    margin-right: 30px;           /* Certifica que não haja margem à direita */
+    margin-left: auto;         /* Alinha automaticamente à direita */
+    margin-top: 300px;
 }
 
 .login-container h2 {

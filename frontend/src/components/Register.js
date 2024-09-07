@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Register.css';
 
 const Register = () => {
@@ -11,18 +11,15 @@ const Register = () => {
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
 
+    const location = useLocation();
     const navigate = useNavigate();
+    const { plan_id, change_plan } = location.state || {};
 
     const formatPhoneNumber = (value) => {
-        // Remove tudo que não é número
         let phoneNumber = value.replace(/\D/g, '');
-
-        // Limita o número de caracteres a 11 dígitos
         if (phoneNumber.length > 11) {
             phoneNumber = phoneNumber.substring(0, 11);
         }
-
-        // Formata o número para (xx)xxxxx-xxxx
         if (phoneNumber.length > 10) {
             return phoneNumber.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         } else if (phoneNumber.length > 5) {
@@ -48,7 +45,6 @@ const Register = () => {
             return;
         }
 
-        // Atualização da expressão regular para corresponder ao formato correto
         const whatsappPattern = /^\(\d{2}\)\s\d{5}-\d{4}$/;
         if (!whatsappPattern.test(whatsapp)) {
             setMessage('Por favor, insira um número de WhatsApp válido');
@@ -57,42 +53,41 @@ const Register = () => {
         }
 
         try {
-            // Enviar dados para o backend para verificação ou pré-processamento, se necessário
             const response = await fetch('http://localhost:8000/auth/register/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    username: firstName,
-                    email,
-                    whatsapp: whatsapp.replace(/\D/g, ''), // Envia somente os números para o backend
-                    password
+                    nome: firstName,
+                    email: email,
+                    whatsapp: whatsapp.replace(/\D/g, ''),
+                    password: password,
+                    plan_id: plan_id,
                 }),
             });
 
             const data = await response.json();
 
-            if (data.redirect === 'plans') {
-
-                navigate('/plans', { 
-                    state: { 
-                        nome: firstName, 
-                        email: email, 
-                        whatsapp: whatsapp, 
-                        password: password, 
-                        change_plan: false 
-                    } 
-                });
-                
-            } else if (data.redirect === 'login') {
-                setMessage(data.message);
+            if (data.success) {
                 setSuccess(true);
-                // setTimeout(() => {
-                //     navigate('/login', { state: { message: data.message } });
-                // }, 3000);  // Delay de 3 segundos antes de redirecionar para o login
+                setMessage('Conta criada com sucesso');
+                if (parseInt(plan_id) === 1) {
+                    navigate('/login'); // Free Plan vai para login
+                } else {
+                    navigate('/checkout', {
+                        state: {
+                            plan_id,
+                            email,
+                            whatsapp,
+                            name: firstName,
+                            password,
+                            change_plan
+                        }
+                    });
+                }
             } else {
-                setMessage(data.message);
+                setMessage(data.message || 'Erro ao criar conta');
                 setSuccess(false);
             }
 
@@ -126,7 +121,7 @@ const Register = () => {
                     type="tel"
                     placeholder="Whatsapp"
                     value={whatsapp}
-                    onChange={handleWhatsappChange}  // Use a função handleWhatsappChange
+                    onChange={handleWhatsappChange}
                     required
                 />
                 <input
@@ -144,11 +139,7 @@ const Register = () => {
                     required
                 />
                 <button type="submit">CRIAR CONTA</button>
-                <div className="social-login-buttons">
-                    {/* <button className="facebook">Continue com Facebook</button> */}
-                    {/* <button className="google">Continue com Google</button> */}
-                </div>
-                <p>Já possui cadastro? <Link to="/">Faça o login</Link></p>
+                <p>Já possui cadastro? <Link to="/login">Faça o login</Link></p>
             </form>
             {message && (
                 <div
@@ -170,3 +161,4 @@ const Register = () => {
 };
 
 export default Register;
+

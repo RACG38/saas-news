@@ -1,137 +1,119 @@
-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
+@import 'Global.css';
 
-/* Estilos para o menu lateral */
-.side-menu {
-    position: fixed;
-    top: 0;
-    right: -100%;  /* O menu começa fora da tela */
-    width: 350px;
-    height: 100%;
-    background-color: #f7f9fc;  /* Cor de fundo suave */
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1); /* Sombra mais suave */
-    padding: 20px;
-    transition: right 0.3s ease, background-color 0.3s ease;
-    z-index: 1000;
-    overflow-y: auto;  /* Garante que o conteúdo seja rolável */
-    font-family: 'Arial', sans-serif;
-}
-
-.side-menu.open {
-    right: 0;  /* Desliza o menu para dentro da tela quando aberto */
-}
-
-.side-menu h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 1.5rem;
-    color: #333;
+.checkout-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Alinha os elementos no topo */
+  gap: 20px; /* Ajusta a distância entre os elementos */
+  padding: 20px;
+  height: 100%;
+  margin: 0;
+  margin-top: 30px;
+  padding: 0;
+  display: flex; 
+  
 }
 
 
-/* Estilos para os botões do menu lateral */
-.side-menu button {
-    margin-top: 30px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    cursor: pointer;
-    border-radius: 50px;
-    width: 250px;
-    height: auto;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 1.1rem;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+.payment-form {
+  flex: 1;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #fff;
+  max-width: 500px;
+  font-family: Arial, sans-serif;
 }
 
-.side-menu button:hover {
-    background-color: #218838;
-    transform: scale(1.05);
-    box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+.payment-form h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
-/* Estilos para garantir que os campos do formulário sejam visíveis e funcionais */
-#form-checkout {
-    display: block;
-    width: 100%;
+.payment-form .form-group {
+  margin-bottom: 15px;
 }
 
-#form-checkout__cardNumber,
-#form-checkout__expirationDate,
-#form-checkout__securityCode,
-#form-checkout__cardholderName,
-#form-checkout__issuer {
-    width: 100%;
-    margin-bottom: 15px;  /* Mais espaço entre os campos */
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    box-sizing: border-box; /* Garante que padding não afete o width total */
-    background-color: #fff;  /* Fundo claro para visibilidade */
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
+.payment-form .form-group label {
+  display: block;
+  margin-bottom: 5px;
 }
 
-#form-checkout__cardNumber:focus,
-#form-checkout__expirationDate:focus,
-#form-checkout__securityCode:focus,
-#form-checkout__cardholderName:focus,
-#form-checkout__issuer:focus {
-    border-color: #80bdff;
-    outline: none;
+.payment-form input,
+.payment-form .stripe-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-/* Popup geral */
-.popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border: 2px solid green;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+.payment-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.spinner {
-    margin: 0 auto;
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: #09f;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 1s linear infinite;
+.payment-form button:hover {
+  background-color: #45A049;
 }
 
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.credit-card-preview {
+  width: 300px;
+  position: relative;
+  perspective: 1000px;
 }
 
-.loading-text {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #555;
-    text-align: center;
-    font-style: italic;
+.plan-details {
+  flex: 0.3; /* Reduz o tamanho da caixa em relação ao formulário */
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+  max-width: 300px; /* Limita a largura máxima da caixa */
 }
 
-
-.plan.disabled {
-    pointer-events: none;
-    opacity: 0.6;
+.plan-details h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
 }
 
-.loading-section {
-    margin-top: 20px;
-    text-align: center;
+.plan-details p {
+  font-size: 14px;
+  color: #555;
+}
+
+.plan-details .plan-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.plan-details .plan-renewal {
+  font-size: 14px;
+  color: #777;
+}
+
+.card-number,
+.expiry,
+.cvc {
+    transition: all 0.3s ease-in-out;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center; /* Alinha o checkbox e o texto verticalmente */
+  justify-content: flex-start; /* Garante que o checkbox fique alinhado à esquerda */
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 10px; /* Espaço entre o checkbox e o texto */
 }
 

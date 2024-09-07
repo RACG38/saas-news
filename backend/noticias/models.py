@@ -50,8 +50,23 @@ class Noticia(models.Model):
     def __str__(self):
         return f"Notícia sobre {self.acao_selecionada.simbolo}"
 
+class Endereco(models.Model):
+
+    cep = models.CharField(max_length=255)
+    logradouro = models.CharField(max_length=255)
+    numero = models.CharField(max_length=255)
+    complemento = models.CharField(max_length=255)
+    bairro = models.CharField(max_length=255)
+    cidade = models.CharField(max_length=255)
+    estado = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = 'Endereço'
+        verbose_name_plural = 'Endereços'
+
 class Cliente(models.Model):
     nome = models.CharField(max_length=255)
+    cpf = models.CharField(max_length=12, null=True, blank=True)
     email = models.EmailField(unique=True)
     whatsapp = models.CharField(max_length=15, null=True, blank=True)
     password = models.CharField(max_length=128, null=True, blank=True)
@@ -60,10 +75,13 @@ class Cliente(models.Model):
     tickers = models.ManyToManyField(AcaoSelecionada, related_name='clientes')
     stripe_customer_id = models.CharField(max_length=255, null=True, blank=True)  
     token = models.ForeignKey(Token, on_delete=models.CASCADE, null=True, blank=True)
+    endereco = models.ForeignKey(Endereco, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.nome}"
     
+
+
 
 
     

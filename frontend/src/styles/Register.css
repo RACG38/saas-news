@@ -1,13 +1,4 @@
-body {
-    height: 871.955px;
-    background-color: rgb(9,10,22);
-    background-image: url(https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/16307-b31032316e6e88916f46f0718cf9328c.webp);
-    background-position: 50% 50%;
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-
-
+/* Reflete em todos os arquivos css */
 .registration-container {
     max-width: 500px; /* Aumenta a largura do menu */
     padding: 30px; /* Aumenta o padding para mais espaço interno */
