@@ -11,10 +11,19 @@ end_fetch_news = settings.END_FETCH_NEWS
 
 @shared_task
 def delete_unassociated_stocks():
-    # Consulta para encontrar ações sem clientes
-    acoes_sem_cliente = AcaoSelecionada.objects.filter(cliente__isnull=True)
+    # Consulta para encontrar ações sem clientes associados
+    acoes_sem_cliente = AcaoSelecionada.objects.annotate(num_clientes=Count('clientes')).filter(num_clientes=0)
+    
     # Deletar as ações que não estão associadas a nenhum cliente
     acoes_sem_cliente.delete()
+
+@shared_task
+def delete_unassociated_tokens():
+
+    # Consulta para encontrar ações sem clientes
+    tokens_sem_cliente = Token.objects.filter(cliente__isnull=True)
+    # Deletar as ações que não estão associadas a nenhum cliente
+    tokens_sem_cliente.delete()
 
 @shared_task
 def delete_previous_day_news():
@@ -91,7 +100,6 @@ def fetch_news_for_stocks():
                 error_message = news_data.get('message', 'Erro desconhecido ao buscar notícias.')
                 print(f"Erro ao buscar notícias para {acao.simbolo}: {error_message}")
 
-
 @shared_task
 def send_daily_news_email(*args, **kwargs):
 
@@ -109,7 +117,7 @@ def send_daily_news_email(*args, **kwargs):
 
     for cliente in clientes:
         limite_noticias = cliente.plano.qtdade_noticias if cliente.plano else max_daily_news
-        acoes = AcaoSelecionada.objects.filter(cliente=cliente)
+        acoes = cliente.tickers.all()
 
         if not acoes.exists():
             continue
@@ -237,34 +245,52 @@ def check_and_save_dividend_news():
 
 @shared_task
 def monitor_news_for_pro_clients():
-    pro_clients = Cliente.objects.filter(plano__nome_plano="Pro")  # Buscar clientes com plano "Pro"
-    current_time = timezone.now()
+    # Definir o fuso horário de Brasília (UTC-3)
+    brasilia_tz = pytz_timezone('America/Sao_Paulo')
     
-    for cliente in pro_clients:
-        acoes = AcaoSelecionada.objects.filter(cliente=cliente)        
+    # Hora atual no fuso horário de Brasília
+    current_time_brasilia = timezone.now().astimezone(brasilia_tz)
+    current_hour_brasilia = current_time_brasilia.hour  # Verifica a hora atual no fuso horário de Brasília
 
-        for acao in acoes:
-            # Buscar notícias desde a última verificação (último minuto)
-            from_time = current_time - timezone.timedelta(minutes=1)
-            url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt'
-            response = requests.get(url)
-            news_data = response.json()
+    if start_fetch_news <= current_hour_brasilia < end_fetch_news:
+    
+        pro_clients = Cliente.objects.filter(plano__nome_plano="Pro")  # Buscar clientes com plano "Pro"
+        
+        for cliente in pro_clients:
 
-            if news_data.get('status') == 'ok':
-                for article in news_data.get('articles', []):
-                    # Verificar se a notícia já foi armazenada para evitar duplicatas
-                    if not Noticia.objects.filter(acao_selecionada=acao, url=article['url']).exists():
-                        noticia = Noticia.objects.create(
-                            acao_selecionada=acao,
-                            fonte=article['source']['name'],
-                            conteudo=article.get('description') or article.get('title', ''),
-                            url=article['url'],
-                            data_publicacao=parse_datetime(article['publishedAt'])
-                        )
+            # Buscar as ações selecionadas diretamente a partir do campo ManyToMany `tickers` do cliente
+            acoes = cliente.tickers.all()
 
-                        # Chama a função apenas se o plano for "Pro"
-                        send_immediate_news_email.delay(cliente.id, noticia.id)
+            for acao in acoes:
 
+                # Buscar notícias desde a última verificação (último minuto)
+                from_time = current_time_brasilia - timedelta(minutes=1)
+                url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt'
+                response = requests.get(url)
+                news_data = response.json()
+
+                if news_data.get('status') == 'ok':
+
+                    for article in news_data.get('articles', []):
+                        # Converter a data de publicação da notícia para um formato datetime no fuso horário UTC
+                        published_at = parse_datetime(article['publishedAt']).astimezone(pytz.UTC)
+                        
+                        # Verificar se a notícia foi publicada hoje no horário de Brasília
+                        if published_at.astimezone(brasilia_tz).date() == current_time_brasilia.date():
+
+                            # Verificar se a notícia já foi armazenada para evitar duplicatas
+                            if not Noticia.objects.filter(acao_selecionada=acao, url=article['url']).exists():
+                                noticia = Noticia.objects.create(
+                                    acao_selecionada=acao,
+                                    fonte=article['source']['name'],
+                                    conteudo=article.get('description') or article.get('title', ''),
+                                    url=article['url'],
+                                    data_publicacao=published_at  # Salva a data de publicação
+                                )
+
+                                if noticia:
+                                    # Enviar a notícia por e-mail, já que o plano do cliente é "Pro"
+                                    send_immediate_news_email(cliente.id, noticia.id)
 
 def send_immediate_news_email(cliente_id, noticia_id):
     try:
@@ -330,3 +356,4 @@ def fetch_and_send_news_chain():
         fetch_news_for_stocks.s(),
         send_daily_news_email.s(),
     ).apply_async()
+

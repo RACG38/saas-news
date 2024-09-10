@@ -10,11 +10,9 @@
   margin: 0;
   margin-top: 30px;
   padding: 0;
-  display: flex; 
-  
 }
 
-
+/* Caixa para o formulário de pagamento */
 .payment-form {
   flex: 1;
   border: 1px solid #ddd;
@@ -28,6 +26,36 @@
 .payment-form h2 {
   font-size: 24px;
   margin-bottom: 20px;
+}
+
+/* Caixa para os dados do cartão */
+.card-info-box {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.card-info-box h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+/* Caixa para os dados do endereço */
+.address-info-box {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.address-info-box h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  font-weight: bold;
 }
 
 .payment-form .form-group {
@@ -48,10 +76,11 @@
   border-radius: 4px;
 }
 
+/* Botão de pagamento */
 .payment-form button {
   width: 100%;
   padding: 10px;
-  background-color: #4CAF50;
+  background-color: #ff6f00;
   color: white;
   border: none;
   border-radius: 4px;
@@ -60,13 +89,12 @@
 }
 
 .payment-form button:hover {
-  background-color: #45A049;
+  background-color: #e7a16c;
 }
 
-.credit-card-preview {
-  width: 300px;
-  position: relative;
-  perspective: 1000px;
+button[disabled] {
+  background-color: #ccc; /* Cor de fundo para indicar que está desabilitado */
+  cursor: not-allowed; /* Indica que o botão não pode ser clicado */
 }
 
 .plan-details {
@@ -101,19 +129,131 @@
   color: #777;
 }
 
-.card-number,
-.expiry,
-.cvc {
-    transition: all 0.3s ease-in-out;
+/* Ajusta a aparência do grupo de campos */
+.form-group {
+  display: flex;
+  align-items: center; /* Alinha verticalmente no centro */
+  gap: 10px; /* Adiciona um espaço entre o checkbox e o label */
+}
+
+.inline-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inline-field {
+  flex: 1;
+}
+
+input,
+.payment-form .stripe-input {
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.payment-form .stripe-input {
+  background-color: #fff;
+  width: 100%;
+}
+
+.credit-card-preview {
+  width: 300px;
+  position: relative;
+  perspective: 1000px;
 }
 
 .checkbox-group {
   display: flex;
-  align-items: center; /* Alinha o checkbox e o texto verticalmente */
-  justify-content: flex-start; /* Garante que o checkbox fique alinhado à esquerda */
+  align-items: center;
+  justify-content: flex-start; /* Garante que o conteúdo seja alinhado à esquerda */
+  gap: 5px; /* Espaço entre o checkbox e o label */
 }
 
 .checkbox-group input[type="checkbox"] {
-  margin-right: 10px; /* Espaço entre o checkbox e o texto */
+  margin: 0;
+  padding: 0;
 }
 
+.checkbox-group label {
+  margin: 0;
+}
+/* Adiciona um cursor de ponteiro para indicar que a seção é clicável */
+.card-info-box h3,
+.address-info-box h3 {
+  cursor: pointer;
+}
+
+.card-info-box,
+.address-info-box {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-bottom: 20px;
+}
+
+.card-info-box h3,
+.address-info-box h3 {
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-details {
+  flex: 0.3;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-width: 300px;
+  font-family: Arial, sans-serif;
+}
+
+/* Caixa de status de pagamento */
+.payment-status {
+  flex: 0.3;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 30px;
+  margin-top: 15px;    
+  background-color: #f9f9f9;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+  color: #333;
+  text-align: left;
+  max-width: 300px;
+}
+
+.payment-status h3{
+
+  flex: 0.3;
+  text-align: center;
+  font-size: 22px;
+  font-family: Arial, sans-serif;  
+
+}
+
+/* Estilo para exibir mensagens de sucesso */
+.payment-status-box.success {
+  border-color: #4caf50;
+  background-color: #e8f5e9;
+  color: #4caf50;
+}
+
+/* Estilo para exibir mensagens de falha */
+.payment-status-box.error {
+  border-color: #f44336;
+  background-color: #fbe9e7;
+  color: #f44336;
+}
+
+/* Estilo para mensagens de informação */
+.payment-status-box.info {
+  border-color: #2196f3;
+  background-color: #e3f2fd;
+  color: #2196f3;
+}

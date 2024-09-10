@@ -47,8 +47,6 @@ def enviar_email_reset_token(cliente, token_obj):
     email_template = 'email/change_password.html'
     subject = f'{cliente.nome}, esse é o seu pedido de recuperação de senha'     
 
-    logger.debug(token_obj)
-
     email_context = {
         'cliente': cliente,
         'token_id': token_obj.token_id,
@@ -284,11 +282,7 @@ class RegisterView(APIView):
 
                     return JsonResponse({
                         'plan_id': cliente.plano.id,                
-                    })  
-                
-                if action == 'get_card_info' and email:                          
-
-                    return self.get_card_info(request) 
+                    })                                 
 
 
                 customer = stripe.Customer.list(email=email).data[0] # Verifica se já existe um cadastro do cliente no Stripe
@@ -362,6 +356,12 @@ class CheckoutView(APIView):
             email = request.data.get('email')      
 
             customer_stripe = stripe.Customer.list(email=email)
+
+            # Verifique se o cliente existe
+            cliente = Cliente.objects.filter(email=email).first()
+            
+            if not cliente:
+                return Response({'success': False, 'error': 'Cliente não encontrado'}, status=status.HTTP_404_NOT_FOUND)
                 
             if customer_stripe.data:
                 
@@ -387,7 +387,9 @@ class CheckoutView(APIView):
             if cards:
                 return Response({
                     'success': True,
-                    'cards': cards
+                    'cards': cards,
+                    'cpf': cliente.cpf,
+                    'cep': cliente.endereco.cep,
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Nenhum cartão encontrado.'}, status=status.HTTP_404_NOT_FOUND)
@@ -409,11 +411,12 @@ class CheckoutView(APIView):
             address_data = request.data.get('address')
             action = request.data.get('action')
 
+            # Quando a ação é obter informações de cartão
             if action == "get_card_info":
                 return self.get_card_info(request)
 
+            # Acessa os dados do endereço
             if address_data:
-                # Extrair os campos de endereço do dicionário
                 logradouro = address_data.get('logradouro')
                 numero = address_data.get('numero')
                 complemento = address_data.get('complemento')
@@ -422,16 +425,17 @@ class CheckoutView(APIView):
                 estado = address_data.get('estado')
                 cep = address_data.get('cep')
 
+            # Recupera o plano
             plano = get_object_or_404(Plano, id=plan_id)
 
-            # Escolher o Price ID baseado no plano
+            # Escolhe o Price ID baseado no plano
             if plan_id == 2:
                 price_id = "price_1PqRMXFoYdflkG65i6tWga0K"  # Plano Basic
             else:
                 price_id = "price_1PqRMwFoYdflkG65l1ac87Hd"  # Plano Pro
 
             if email and plano:
-                # Recupera o cliente no banco de dados
+                # Recupera ou cria o cliente no banco de dados
                 cliente, _ = Cliente.objects.update_or_create(
                     email=email,
                     defaults={
@@ -440,7 +444,7 @@ class CheckoutView(APIView):
                     }
                 )
 
-            # Criar ou atualizar o token de redefinição de senha no banco de dados
+            # Criar ou atualizar o token no banco de dados
             token_obj, created = Token.objects.update_or_create(
                 cliente=cliente,
                 defaults={
@@ -450,86 +454,85 @@ class CheckoutView(APIView):
                 }
             )
 
+            if cpf:
+
+                cliente.cpf = cpf
+                
             cliente.token = token_obj
             cliente.save()
 
-            if cliente:
-                # Criar ou atualizar o objeto de endereço
-                endereco, created = Endereco.objects.update_or_create(
-                    cep=cep,  # Usar o CEP como chave de busca para criar ou atualizar
-                    defaults={
-                        'logradouro': logradouro,
-                        'numero': numero,
-                        'complemento': complemento,
-                        'cidade': cidade,
-                        'bairro': bairro,
-                        'estado': estado,
-                    }
-                )
+            # Atualiza ou cria o endereço
+            endereco, created = Endereco.objects.update_or_create(
+                cep=cep,  
+                defaults={
+                    'logradouro': logradouro,
+                    'numero': numero,
+                    'complemento': complemento,
+                    'cidade': cidade,
+                    'bairro': bairro,
+                    'estado': estado,
+                }
+            )
 
-                if created:
-                    cliente.cpf = cpf
-                    cliente.endereco = endereco
-                    cliente.save()
+            if endereco:
+                
+                cliente.endereco = endereco
+                cliente.save()
 
-                # Verificar se é um método de pagamento salvo (apenas o id é fornecido)
-                if 'id' in payment_method:
-                    # Se for um cartão salvo, recupera o PaymentMethod completo no Stripe
-                    payment_method = stripe.PaymentMethod.retrieve(payment_method['id'])
-                    payment_method_id = payment_method['id']
-                else:
-                    # Caso contrário, cria um novo método de pagamento
-                    new_payment_method_fingerprint = payment_method.get('card', {}).get('fingerprint')
-                    existing_payment_methods = stripe.PaymentMethod.list(
-                        customer=cliente.stripe_customer_id,
-                        type="card"
-                    )
-
-                    method_exists = False
-                    customer = stripe.Customer.retrieve(cliente.stripe_customer_id)
-                    default_payment_method_id = customer.invoice_settings.default_payment_method
-
-                    for method in existing_payment_methods.data:
-                        # Se o fingerprint é o mesmo e não for o método de pagamento padrão, excluí-lo
-                        if method.card.fingerprint == new_payment_method_fingerprint and method.id != default_payment_method_id:
-                            stripe.PaymentMethod.detach(method.id)
-
-                    if not method_exists:
-                        # Anexar o PaymentMethod ao cliente no Stripe, se ainda não estiver anexado
-                        stripe.PaymentMethod.attach(
-                            payment_method.get('id'),
-                            customer=cliente.stripe_customer_id,
-                        )
-                    
-                    # Usa o novo PaymentMethod criado
-                    payment_method_id = payment_method.get('id')
-
-                    # Definir o PaymentMethod como padrão para o cliente
-                    stripe.Customer.modify(
-                        cliente.stripe_customer_id,
-                        invoice_settings={'default_payment_method': payment_method_id},
-                    )
-
-                # Verificar se o cliente já possui uma assinatura ativa
-                existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
-
-                if existing_subscriptions.data:
-                    # Cancelar a assinatura existente
-                    for subscription in existing_subscriptions.data:
-                        stripe.Subscription.delete(subscription.id)
-
-                # Criar a nova assinatura no Stripe
-                subscription = stripe.Subscription.create(
+            # Verifica se é um método de pagamento salvo (tem um 'id' presente)
+            if 'id' in payment_method:
+                payment_method_id = payment_method['id']
+                
+                # Verifica se o PaymentMethod já está anexado ao cliente
+                payment_method_obj = stripe.PaymentMethod.retrieve(payment_method_id)
+                if not payment_method_obj.customer:
+                    # Anexa o PaymentMethod ao cliente no Stripe
+                    stripe.PaymentMethod.attach(payment_method_id, customer=cliente.stripe_customer_id)
+            else:
+                # Se for um novo PaymentMethod
+                new_payment_method_fingerprint = payment_method.get('card', {}).get('fingerprint')
+                existing_payment_methods = stripe.PaymentMethod.list(
                     customer=cliente.stripe_customer_id,
-                    items=[{'price': price_id}],
-                    default_payment_method=payment_method_id,
-                    expand=['latest_invoice.payment_intent'],
+                    type="card"
                 )
 
-                cliente.refresh_from_db()
+                method_exists = False
+                for method in existing_payment_methods.data:
+                    if method.card.fingerprint == new_payment_method_fingerprint:
+                        method_exists = True
+                        payment_method_id = method.id
+                        break
 
-                # Enviar e-mail de confirmação com os detalhes do cartão salvo ou novo
-                enviar_email_confirmacao(cliente, payment_method, change_plan)
+                if not method_exists:
+                    payment_method_id = payment_method.get('id')
+                    stripe.PaymentMethod.attach(payment_method_id, customer=cliente.stripe_customer_id)
+
+            # Define o PaymentMethod como padrão para o cliente
+            stripe.Customer.modify(
+                cliente.stripe_customer_id,
+                invoice_settings={'default_payment_method': payment_method_id},
+            )
+
+            # Verificar se o cliente já possui uma assinatura ativa
+            existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
+
+            if existing_subscriptions.data:
+                # Cancelar a assinatura existente
+                for subscription in existing_subscriptions.data:
+                    stripe.Subscription.delete(subscription.id)
+
+            # Criar a nova assinatura no Stripe
+            subscription = stripe.Subscription.create(
+                customer=cliente.stripe_customer_id,
+                items=[{'price': price_id}],
+                default_payment_method=payment_method_id,
+                expand=['latest_invoice.payment_intent'],
+            )
+
+            cliente.refresh_from_db()
+
+            # Enviar e-mail de confirmação
+            enviar_email_confirmacao(cliente, payment_method, change_plan)
 
             return Response({
                 'success': True,
@@ -537,11 +540,13 @@ class CheckoutView(APIView):
             }, status=status.HTTP_200_OK)
 
         except stripe.error.StripeError as e:
+            logger.error(f"Stripe error: {e}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
+            logger.error(f"Erro inesperado: {e}")
             return Response({'error': f"Erro inesperado ao atualizar o usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
 class DashboardView(APIView):
 
     def get(self, request):

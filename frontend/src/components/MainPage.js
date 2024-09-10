@@ -1,67 +1,155 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../styles/MainPage.css';
+import '../styles/MainPage.css'; // Certifique-se de que o arquivo CSS está corretamente importado
 
 const MainPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { plano_id, nome, email, change_plan } = location.state || {};  // Usar plan_nome para saber o plano atual do cliente
-  
-  // Lógica para redirecionar para checkout ou registro
-  const handleCheckoutClick = (selectedPlanName) => {
+  const { plan_id, nome, email, change_plan } = location.state || {};
+ 
+  const pricingRef = useRef(null);  // Referência para a seção de planos
 
-    if (change_plan && selectedPlanName === 'Free' && plano_id !== 1) {      
-      // Se o cliente está mudando de plano, não está no plano Free e tenta selecionar o Free, redireciona para o login
+  const handleCheckoutClick = (selectedPlanName) => {
+    if (change_plan && selectedPlanName === 'Free' && plan_id !== 1) {
       navigate('/login', { state: { selectedPlanName } });
     } else {
-      // Caso contrário, segue o fluxo normal para o checkout ou registro
-      if (change_plan) {        
-        navigate('/checkout', { state: { plano_id: selectedPlanName === 'Free' ? 1 : selectedPlanName === 'Basic' ? 2 : 3, email, nome, change_plan } });
+      if (change_plan) {
+        navigate('/checkout', {
+          state: {
+            plan_id: selectedPlanName === 'Free' ? 1 : selectedPlanName === 'Basic' ? 2 : 3,
+            email,
+            nome,
+            change_plan
+          }
+        });
       } else {
-        navigate('/register', { state: { plano_id: selectedPlanName === 'Free' ? 1 : selectedPlanName === 'Basic' ? 2 : 3, change_plan } });
+        navigate('/register', {
+          state: {
+            plan_id: selectedPlanName === 'Free' ? 1 : selectedPlanName === 'Basic' ? 2 : 3,
+            change_plan
+          }
+        });
       }
     }
   };
 
   const handleLoginClick = () => {
-    navigate('/login'); // Redireciona para a página de login
+    navigate('/login');
   };
 
-  const isCurrentPlan = (plan) => plano_id === plan; // Verifica se é o plano atual do cliente
+  const isCurrentPlan = (plan) => plan_id === plan;
+
+  // Função para rolar para a seção de planos
+  const scrollToPricing = () => {
+    pricingRef.current.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div>
       {/* Cabeçalho com opção de Login */}
       <header>
         <div className="header-container">
-          <h1>News APP</h1>
+          <div className="logo-title-container">
+            {/* Caminho relativo para a imagem na pasta public */}
+            <h1>StockHub News</h1>
+            <img src="/stockhub_news_logo.png" alt="Logo StockHub News" className="logo" />            
+          </div>
           <nav>
-            <ul>
+            <ul className="nav-menu">
               <li><a href="#" onClick={handleLoginClick}>Login</a></li>
             </ul>
           </nav>
         </div>
       </header>
 
-      {/* Seção de Boas-vindas */}
-      <section className="intro-section">
+      {/* Hero Section */}
+      <section className="hero-section">
         <div className="container">
-          <h2>Bem-vindo ao Nosso Serviço</h2>
-          <p>Escolha o plano que melhor se adapta às suas necessidades</p>
+          <div className="hero-content">
+            <div className="hero-text">
+              <h2>Mantenha-se à frente no mercado de ações!</h2>
+              <p>Receba notícias em tempo real das suas ações diretamente no seu email e WhatsApp. Não perca nenhuma oportunidade!</p>
+              <button className="cta-button" onClick={scrollToPricing}>Experimente Grátis</button>
+            </div>
+            <div className="hero-image">
+              {/* Caminho relativo para a imagem na pasta public */}
+              <img src="/cellphone_message.png" alt="Notificações de celular" />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Seção de Planos de Preço */}
-      <section className="pricing-section">
+
+      {/* Seção de Benefícios */}
+      <section className="benefits-section">
+        <div className="container">
+          <h2>Por que escolher nosso serviço?</h2>
+          <ul>
+            <li>✔ Notícias em tempo real: mantenha-se informado sobre todas as suas ações cadastradas.</li>
+            <li>✔ Alertas personalizados: receba notificações diretamente no seu email ou WhatsApp.</li>
+            <li>✔ Acesso a análises de sentimento: descubra o que o mercado está dizendo sobre suas ações.</li>
+            <li>✔ Planos acessíveis para diferentes necessidades de investidores.</li>
+          </ul>
+        </div>
+      </section>
+      {/* Seção de comparação com e sem o  plano*/}
+      <section class="comparison-section">
+        <div class="container">
+          <h2>Uma ferramenta obrigatória para quem leva a sério os seus investimentos...</h2>
+          <p>Essa é a diferença entre os 99,99% dos investidores que não ganham dinheiro para os outros 0,01% que ganham</p>
+          
+          <div class="comparison-cards">
+            <div class="comparison-card negative">
+              <h3>Sem o StockHub News</h3>
+              <ul>
+                <li><span class="icon-cross">✖</span> Buscar informação em várias fontes diferentes</li>
+                <li><span class="icon-cross">✖</span> Muito trabalho e pouco resultado</li>
+                <li><span class="icon-cross">✖</span> Poucas notícias direcionadas às suas ações</li>
+                <li><span class="icon-cross">✖</span> Não é avisado de eventos importantes das suas ações</li>
+                <li><span class="icon-cross">✖</span> Pouca informação para tomar decisões assertivas</li>
+              </ul>
+            </div>
+            <div class="comparison-card positive">
+              <h3>Com o StockHub News</h3>
+              <ul>
+                <li><span class="icon-check">✔</span> Única fonte de informações e notícias</li>
+                <li><span class="icon-check">✔</span> Sempre atualizado de acontecimentos do mercado</li>
+                <li><span class="icon-check">✔</span> Por dentro dos principais eventos das suas ações</li>
+                <li><span class="icon-check">✔</span> Notícias em tempo real, por email e whatsapp</li>
+                <li><span class="icon-check">✔</span> Alerta de recebimento de dividendos e data-com das suas ações</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* Seção de Depoimentos */}
+      <section className="testimonials-section">
+        <div className="container">
+          <h2>O que nossos usuários dizem</h2>
+          <div className="testimonial">
+            <p>"Desde que comecei a usar o News APP, nunca mais perdi informações importantes sobre minhas ações!"</p>
+            <span>— João, Investidor Pro</span>
+          </div>
+          <div className="testimonial">
+            <p>"As notificações em tempo real me ajudam a tomar decisões mais rápidas. Simplesmente incrível!"</p>
+            <span>— Maria, Investidora Basic</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Seção de Planos de Preço (sempre no final) */}
+      <section className="pricing-section" ref={pricingRef}>
         <div className="container">
           <h2>Nossos Planos</h2>
           <table className="pricing-table">
             <thead>
               <tr>
-                <th>Funcionalidades</th>
-                <th>Free</th>
-                <th>Basic</th>
-                <th>Pro</th>
+                <th><strong>Funcionalidades</strong></th>
+                <th><strong>Free</strong></th>
+                <th><strong>Basic</strong></th>
+                <th><strong>Pro</strong></th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +166,7 @@ const MainPage = () => {
                 <td><span className="check-icon">&#10003;</span></td>
               </tr>
               <tr>
-                <td>Notícias enviadas por whatsapp</td>
+                <td>Notícias enviadas por WhatsApp</td>
                 <td>---</td>
                 <td><span className="check-icon">&#10003;</span></td>
                 <td><span className="check-icon">&#10003;</span></td>
@@ -114,12 +202,12 @@ const MainPage = () => {
                 <td>5</td>
               </tr>
               <tr>
-                <td></td>
+              <td><strong>ESCOLHA O SEU PLANO</strong></td>
                 <td>
                   <button 
                     className={`btn btn-free ${isCurrentPlan(1) ? 'current-plan' : ''}`} 
                     onClick={() => handleCheckoutClick('Free')} 
-                    disabled={isCurrentPlan(1)}  // Desabilita o botão se o plano atual for 'Free'
+                    disabled={isCurrentPlan(1)}
                   >
                     Escolher Free
                   </button>
@@ -128,7 +216,7 @@ const MainPage = () => {
                   <button 
                     className={`btn btn-basic ${isCurrentPlan(2) ? 'current-plan' : ''}`} 
                     onClick={() => handleCheckoutClick('Basic')} 
-                    disabled={isCurrentPlan(2)}  // Desabilita o botão se o plano atual for 'Basic'
+                    disabled={isCurrentPlan(2)}
                   >
                     Escolher Basic
                   </button>
@@ -137,7 +225,7 @@ const MainPage = () => {
                   <button 
                     className={`btn btn-pro ${isCurrentPlan(3) ? 'current-plan' : ''}`} 
                     onClick={() => handleCheckoutClick('Pro')} 
-                    disabled={isCurrentPlan(3)}  // Desabilita o botão se o plano atual for 'Pro'
+                    disabled={isCurrentPlan(3)}
                   >
                     Escolher Pro
                   </button>
@@ -148,18 +236,17 @@ const MainPage = () => {
 
           {/* Texto indicando "Seu plano atual" abaixo da tabela */}
           <div className="current-plan-container">
-            {isCurrentPlan('Free') && <span className="current-plan-label current-plan-free">Seu plano atual</span>}
-            {isCurrentPlan('Basic') && <span className="current-plan-label current-plan-basic">Seu plano atual</span>}
-            {isCurrentPlan('Pro') && <span className="current-plan-label current-plan-pro">Seu plano atual</span>}
+            {isCurrentPlan(1) && <span className="current-plan-label current-plan-free">Seu plano atual</span>}
+            {isCurrentPlan(2) && <span className="current-plan-label current-plan-basic">Seu plano atual</span>}
+            {isCurrentPlan(3) && <span className="current-plan-label current-plan-pro">Seu plano atual</span>}
           </div>
-
         </div>
       </section>
 
       {/* Rodapé */}
       <footer>
         <div className="container">
-          <p>&copy; 2024 Seu Serviço. Todos os direitos reservados.</p>
+          <p>&copy; 2024 StockHub News. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

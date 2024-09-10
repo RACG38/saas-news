@@ -10,6 +10,8 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false); // Estado para gerenciar carregamento
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Estado para exibir a mensagem de sucesso
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -52,6 +54,8 @@ const Register = () => {
             return;
         }
 
+        setLoading(true); // Ativa o estado de carregamento ao iniciar a requisição
+
         try {
             const response = await fetch('http://localhost:8000/auth/register/', {
                 method: 'POST',
@@ -71,30 +75,37 @@ const Register = () => {
 
             if (data.success) {
                 setSuccess(true);
-                setMessage('Conta criada com sucesso');
-                if (parseInt(plan_id) === 1) {
-                    navigate('/login'); // Free Plan vai para login
-                } else {
-                    navigate('/checkout', {
-                        state: {
-                            plan_id,
-                            email,
-                            whatsapp,
-                            name: firstName,
-                            password,
-                            change_plan
-                        }
-                    });
-                }
+                setShowSuccessMessage(true); // Exibe a mensagem de sucesso
+                setMessage('Cadastro realizado com sucesso');
+                setLoading(false);
+
+                setTimeout(() => {
+                    if (plan_id === 1) {
+                        navigate('/login'); // Free Plan vai para login
+                    } else {
+                        navigate('/checkout', {
+                            state: {
+                                plan_id,
+                                email,
+                                whatsapp,
+                                name: firstName,
+                                password,
+                                change_plan
+                            }
+                        });
+                    }
+                }, 2000); // Redireciona após 2 segundos
             } else {
                 setMessage(data.message || 'Erro ao criar conta');
                 setSuccess(false);
+                setLoading(false); // Desativa o estado de carregamento
             }
 
         } catch (error) {
             console.error('Erro no registro:', error);
             setMessage('Erro interno do servidor');
             setSuccess(false);
+            setLoading(false); // Desativa o estado de carregamento
         }
     };
 
@@ -138,10 +149,36 @@ const Register = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                 />
-                <button type="submit">CRIAR CONTA</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Criando Conta...' : 'CRIAR CONTA'}
+                </button>
                 <p>Já possui cadastro? <Link to="/login">Faça o login</Link></p>
             </form>
-            {message && (
+
+            {loading && (
+                <div className="loading-bar">
+                    <div className="loading-bar-progress"></div>
+                </div>
+            )}
+
+            {showSuccessMessage && (
+                <div
+                    className="success-message"
+                    style={{
+                        color: '#ff6f00',
+                        border: '1px solid #ff6f00',
+                        padding: '10px',
+                        marginTop: '10px',
+                        borderRadius: '5px',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                    }}
+                >
+                    Cadastro realizado com sucesso
+                </div>
+            )}
+
+            {message && !showSuccessMessage && (
                 <div
                     className={success ? 'message success' : 'message error'}
                     style={{
@@ -161,4 +198,3 @@ const Register = () => {
 };
 
 export default Register;
-

@@ -1,13 +1,12 @@
 html,
 body {
-    height: 100%;
-    /* Garante que o html e body ocupem 100% da altura da tela */
+    height: 100%;    
     width: 100%;
-    font-size: 17px;
-    /* overflow: hidden; */
+    font-size: 17px;    
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    overflow-x: hidden;
 
 }
 
@@ -26,31 +25,29 @@ body {
 }
 
 .sidebar {
-    width: 40vw;
+    width: 30vw;
     height: 100vh;
     background-color: #4a4956;
     padding: 30px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     color: white;
-    margin-left: 50px;    
-    margin-top: 45px;
+    margin-left: 0;    
+    margin-top: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .sidebar p {
-    margin-bottom: 20px;
-    /* Espaçamento entre os textos */
-    font-size: 1rem;
-    /* Tamanho do texto relativo */
+    margin-bottom: 20px;    
+    font-size: 1rem;    
 }
 
 
 .stocks-section {
     margin-top: 20px;
     flex-grow: 1;
-    overflow-y: auto;
-    /* Habilita a rolagem vertical na seção de stocks */
+    overflow-y: auto;    
     max-height: calc(100vh - 60px);
-    /* Garante que a seção não ultrapasse a altura disponível */
 }
 
 .stocks-grid {
@@ -60,6 +57,7 @@ body {
     margin: 0 auto;
     padding-bottom: 10px;
     grid-template-columns: repeat(4, 1fr);
+    perspective: 1000px;
 }
 
 .stock-card {
@@ -68,33 +66,35 @@ body {
     background-color: #ffffff;
     border-radius: 15px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    /* transition: box-shadow 0.3s ease, border-color 0.3s ease; */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
     overflow: hidden;
     border: 2px solid transparent;
     width: 100%;
     max-width: 300px;
-    /* Define um limite máximo de largura */
     min-width: 300px;
-    /* Define um limite mínimo de largura para uniformidade */
     height: auto;
     min-height: 150px;
-    /* Define um limite mínimo de altura para uniformidade */
     box-sizing: border-box;
-    /* Inclui o padding e a borda dentro do tamanho total */
     margin-left: 30px;
     margin-right: 30px;
 }
 
 .stock-card.selected {
-    border-color: #00f262;
-    background-color: #00f262;
+    border-color: #f19f60;
+    background-color: #f19f60;
     width: 100%;
-    /* Mantém a largura mesmo quando selecionado */
+    border: 1px solid #f0f0f0;    
+    box-shadow: 10px 10px 20px rgb(255, 255, 255);
+    box-shadow: 
+        0px 0px 0px 4px rgba(241, 159, 96, 0.5),  /* Simula uma borda colorida na sombra */
+        0px 10px 15px rgba(0, 0, 0, 0.2);
+    
 }
 
 .stock-card.selected .image-container {
-    background-color: #00f262;
+    background-color: #f19f60;
     /* Altera a cor de fundo da imagem para verde quando selecionado */
 }
 
@@ -131,8 +131,9 @@ body {
 }
 
 .stock-card:hover .stock-image {
-    transform: scale(1.15);
-    /* Aplica um efeito de zoom ao passar o mouse */
+    /* transform: scale(1.15); */
+    transform: scale(1.05) rotateY(0); /* Efeito de hover para aumentar o card suavemente */
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15); 
 }
 
 .stock-symbol {
@@ -212,7 +213,7 @@ body {
 
 .filter-letter.active,
 .filter-letter:hover {
-    background-color: #04963e;
+    background-color: #f19f60;
     color: white;
 }
 
@@ -273,18 +274,15 @@ body {
     align-items: center;
     justify-content: center;
     background-color: rgba(0, 0, 0, 0.5);
-    /* Fundo semitransparente */
     z-index: 9999;
 }
 
 .spinner {
-    border: 30px solid #f3f3f3;
-    border-top: 30px solid #3498db;
+    border: 20px solid #f3f3f3;
+    border-top: 20px solid #ff6f00;
     border-radius: 50%;
     width: 150px !important;
-    /* Aumente a largura */
     height: 150px !important;
-    /* Aumente a altura */
     animation: spin 1s linear infinite;
 }
 

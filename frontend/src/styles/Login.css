@@ -90,7 +90,7 @@
 .loading-bar-progress {
     width: 0;
     height: 100%;
-    background-color: #00f262;
+    background-color: #ff6f00;
     position: absolute;
     animation: loading 2s infinite;
 }

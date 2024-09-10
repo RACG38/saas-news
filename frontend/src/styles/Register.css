@@ -35,7 +35,7 @@
 }
 
 .registration-container button {
-    background-color: #4CAF50;
+    background-color: #ff6f00;
     color: white;
     padding: 14px 20px;
     margin: 16px auto; /* Ajusta as margens para centralizar o botão */
@@ -64,6 +64,47 @@
 }
 
 .registration-container .social-login-buttons .google {
-    background-color: #dd4b39;
+    background-color: #ff6f00;
     color: white;
+}
+
+.success-message {
+    color: #dd4b39;
+    border: 1px solid #ff6f00;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .loading-bar-container {
+    width: 100%;
+    height: 5px;
+    background-color: #f3f3f3;
+    margin-top: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-bar {
+    width: 100%;
+    height: 4px;
+    background-color: #f3f3f3;
+    margin-top: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loading-bar-progress {
+    width: 0;
+    height: 100%;
+    background-color: #dd4b39;
+    position: absolute;
+    animation: loading 2s infinite;
+}
+
+@keyframes loading {
+    0% { width: 0; }
+    100% { width: 100%; }
 }

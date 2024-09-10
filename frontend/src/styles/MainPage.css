@@ -1,184 +1,409 @@
-/* Estilos Gerais */
+/* Estilos gerais */
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;  
+  box-sizing: border-box;
 }
 
-body {
+body, html {
+  width: 100vw !important; /* Garante que o body e html ocupem toda a largura */
+  overflow-x: hidden; /* Evita barra de rolagem horizontal */
   font-family: 'DM Sans', sans-serif;
-  background-color: #f4f4f9;
-  color: #333;
+  background-color: #1E3A5F; /* Fundo escuro */
+  color: #f0f0f0; /* Texto claro */
   line-height: 1.6;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  
 }
 
-/* Centraliza o conteúdo */
+
+/* Container padrão */
 .container {
-  width: 90%;
-  margin: 0 auto;
-  max-width: 1200px;
-  text-align: center;  
+  width: 100vw !important; /* Garante que o container ocupe toda a largura da tela */
+  padding: 0; /* Remove o padding lateral */
+  margin: 0; /* Remove margens */
+  text-align: center;
 }
 
-/* Espaçamento para evitar que o texto seja cortado pelo cabeçalho */
-.intro-section {
-  padding-top: 80px; /* Adiciona espaçamento para evitar que o texto fique cortado pelo cabeçalho */
-}
-
-/* Cabeçalho com Login */
+/* Header */
 header {
-  background-color: #1c1e3e;
-  color: white;
-  padding: 15px 0;
-  width: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  background-color: #1c1c32;
+  color: #f0f0f0; /* Texto claro */
+  padding: 20px 0;
+  width: 100vw; /* Extende o header por toda a largura */
+  
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  margin-left: 30px;
+  max-height: 150px;
 }
 
-header h1 {
-  font-size: 1.8rem;
-}
-
-nav ul {
+.nav-menu {
   list-style: none;
   display: flex;
-  gap: 20px;
 }
 
-nav ul li a {
-  color: white;
+.nav-menu li {
+  margin: 0 100px;
+  margin-right: 30px;
+}
+
+.nav-menu a {
+  color: #f0f0f0; /* Texto claro nos links */
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 30px;
+  border: 2px solid #f0f0f0; /* Adiciona uma borda fina ao redor dos links */
+  padding: 10px 20px; /* Adiciona espaçamento interno para a borda não ficar colada no texto */
+  border-radius: 5px; /* Adiciona bordas arredondadas */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Transição suave ao passar o mouse */
 }
 
-nav ul li a:hover {
+.nav-menu a:hover {
+  background-color: #ff6f00; /* Cor de fundo ao passar o mouse */
+  border-color: #ff6f00; /* Muda a cor da borda ao passar o mouse */
+}
+
+
+.nav-menu a:hover {
   text-decoration: underline;
 }
 
-/* Seção de Boas-vindas */
-.intro-section h2 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  color: #fff;
-}
-
-.intro-section p {
-  font-size: 1.2rem;
-  margin-top: 10px;
-  color: #fff !important;
-}
-
-/* Seção de Planos */
-.pricing-section {
-  background-color: #fff;
+/* Hero Section */
+.hero-section {
+  background-color: #1E3A5F;
   padding: 60px 0;
+  width: 100vw;
+  text-align: center;
 }
 
-.pricing-section h2 {
-  font-size: 2.5rem;
-  margin-bottom: 30px;
+.hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Garante que o texto e a imagem fiquem lado a lado */
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: nowrap; /* Impede que os elementos quebrem para a próxima linha */
 }
 
-/* Estilos da tabela de preços */
+.hero-section h2 {
+  font-size: 42px;
+  color: #f0f0f0; /* Texto claro */
+}
+
+.hero-section p {
+  font-size: 20px;
+  color: #d3d3d3; /* Texto claro mas um tom mais suave */
+}
+
+.hero-text {
+  flex: 1;
+  color: #f0f0f0;
+  padding-right: 20px;
+  text-align: left; /* Alinha o texto à esquerda */
+}
+
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.cta-button {
+  background-color: #ff6f00;
+  color: #f0f0f0; /* Texto claro no botão */
+  padding: 15px 30px;
+  font-size: 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #ff8f00;
+}
+
+/* Seção Benefícios */
+.benefits-section {
+  padding: 100px 0;
+  background-color: #f0f0f0;
+  width: 100vw; /* Estende a seção de benefícios por toda a largura */
+}
+
+.benefits-section h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  color: #1E3A5F; /* Texto claro */
+}
+
+.benefits-section ul {
+  list-style-type: none;
+}
+
+.benefits-section li {
+  font-size: 18px;
+  margin: 10px 0;
+  color: #1E3A5F; /* Texto suave */
+}
+
+/* Seção de Comparação */
+.comparison-section {
+  background-color: #141625; /* Fundo escuro semelhante ao da imagem */
+  color: #ffffff;
+  padding: 100px 0;
+  text-align: center;
+  width: 100vw;
+}
+
+.comparison-section h2 {
+  font-size: 36px;
+  color: #ffffff;
+}
+
+.comparison-section p {
+  font-size: 18px;
+  color: #d3d3d3;
+  margin-bottom: 40px;
+}
+
+.comparison-cards {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+.comparison-card {
+  background-color: #1c1c32;
+  border-radius: 10px;
+  padding: 100px;
+  width: 100vw !important;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-card h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.comparison-card.negative h3 {
+  color: #ff4d4d;
+}
+
+.comparison-card.positive h3 {
+  color: #00c853;
+}
+
+.comparison-card ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.comparison-card li {
+  font-size: 16px;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+}
+
+.icon-cross {
+  color: #ff4d4d !important;
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.icon-check {
+  color: #00c853 !important;
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+
+/* Seção de Depoimentos */
+.testimonials-section {
+  background-color: #1E3A5F;
+  padding: 100px 0;
+  width: 100vw; /* Estende a seção de depoimentos por toda a largura */
+}
+
+.testimonials-section h2 {
+  font-size: 36px;
+  color: #f0f0f0; /* Texto claro */
+}
+
+.testimonial {
+  font-style: italic;
+  margin-bottom: 20px;
+  color: #d3d3d3; /* Texto suave */
+}
+
+.testimonial span {
+  display: block;
+  margin-top: 10px;
+  color: #ff6f00; /* Destaque para o nome do usuário */
+}
+
+/* Seção de preços */
+.pricing-section {
+  padding: 100px 0;
+  background-color: #f0f0f0;
+  width: 100vw; /* Estende a seção de preços por toda a largura */
+  color: #1E3A5F; /* Texto claro */  
+}
+
+/* Tabela de preços com bordas arredondadas e espaçamento entre linhas */
 .pricing-table {
-  width: 100%;
-  border-collapse: collapse;
+  width: auto; /* Ajusta a largura ao conteúdo da tabela */
+  margin: 0 auto; /* Centraliza a tabela */
+  border-collapse: separate; /* Permite que o border-radius e o border-spacing funcionem */
+  border-spacing: 0 10px; /* Adiciona espaçamento de 10px entre as linhas */
   margin-top: 20px;
 }
 
 .pricing-table th, .pricing-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  border: 1px solid #444;
+  padding: 15px;
   text-align: center;
 }
 
+/* Estilo para o cabeçalho da tabela */
 .pricing-table th {
-  background-color: #f4f4f9;
-  font-weight: bold;
-}
-
-.pricing-table td {
-  vertical-align: middle;
-}
-
-/* Estilo para o ícone de check */
-.check-icon {
-  color: #4caf50; /* Verde claro */
-  font-size: 18px;
-}
-
-/* Centraliza o texto */
-.pricing-table td, .pricing-table th {
+  background-color: #ff6f00; /* Cor de fundo para o cabeçalho */
+  color: #f0f0f0; /* Texto claro no cabeçalho */
+  font-weight: bold; /* Deixa o texto em negrito */
+  padding: 15px;
   text-align: center;
-  vertical-align: middle;
+  border: 1px solid #444; /* Mantém a borda igual ao restante da tabela */
 }
 
-/* Estilos dos botões de plano */
-.plan-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
+/* Alternância de cor entre linhas */
+.pricing-table tr:nth-child(odd) td {
+  background-color: #2b2b2b; /* Cor mais escura para linhas ímpares */
+  color: #d3d3d3; /* Texto suave */
 }
 
-/* Botões para cada plano com cores verdes */
+.pricing-table tr:nth-child(even) td {
+  background-color: #383838; /* Cor mais clara para linhas pares */
+  color: #f0f0f0; /* Texto mais claro */
+}
+
+/* Arredondando a primeira e última célula de cada linha */
+.pricing-table tr:first-child th:first-child {
+  border-top-left-radius: 12px; /* Arredonda o canto superior esquerdo */
+}
+
+.pricing-table tr:first-child th:last-child {
+  border-top-right-radius: 12px; /* Arredonda o canto superior direito */
+}
+
+.pricing-table tr:last-child td:first-child {
+  border-bottom-left-radius: 12px; /* Arredonda o canto inferior esquerdo */
+}
+
+.pricing-table tr:last-child td:last-child {
+  border-bottom-right-radius: 12px; /* Arredonda o canto inferior direito */
+}
+
+/* Arredondando as bordas das células laterais de todas as linhas da tabela */
+.pricing-table tr td:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.pricing-table tr td:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.pricing-table tr th:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.pricing-table tr th:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.check-icon {
+  color: #4caf50;
+  font-size: 35px;
+}
+
+/* Botões dos planos */
 .plan-buttons .btn {
   padding: 10px 20px;
-  color: white;
+  color: #f0f0f0; /* Texto claro no botão */
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1.1rem;
-  background-color: #28a745; /* Cor verde padrão */
-  transition: transform 0.3s ease, background-color 0.3s ease; /* Transição suave */
-}
-
-/* Diferentes tonalidades de verde para cada plano */
-.btn-free {
-  background-color: #349e4d !important; /* Verde para plano Free */
-  color: #fff !important;
-}
-
-.btn-basic {
-  background-color: #1c1a7c !important; /* Azul para plano Basic */
-  color: #fff !important;
-}
-
-.btn-pro {
-  background-color: #7a78eb !important; /* Azul mais claro para plano Pro */
-  color: #fff !important;
+  background-color: #ff6f00;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .plan-buttons .btn:hover {
-  transform: scale(1.1); /* Aumenta o tamanho do botão ao passar o mouse */
-  background-color: #1c7430 !important; /* Cor verde mais escura ao passar o mouse */
+  transform: scale(1.1);
 }
 
-/* Estilos do Footer */
+.current-plan {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+/* Estilo do botão Free */
+.btn-free, .btn-basic, .btn-pro {
+    color: #ff6f00 !important;        
+    font-weight: bold !important;
+}
+
+.btn-free:hover, .btn-basic:hover, .btn-pro:hover {
+  background-color: #f0f0f0 !important; /* Verde mais claro no hover */
+}
+
+/* Rodapé */
 footer {
-  background-color: #1c1e3e;
-  color: white;
+  background-color: #1c1c32;
+  color: #f0f0f0; /* Texto claro */
   padding: 20px 0;
-  margin-top: auto;
+  text-align: center;
+  width: 100vw; /* Extende o rodapé por toda a largura */
 }
 
 footer p {
   margin: 0;
   font-size: 1rem;
+  color: #d3d3d3; /* Texto suave */
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
+
+  .hero-content {
+    flex-direction: column; /* Empilha o texto e a imagem em telas menores */
+    text-align: center; /* Centraliza o texto */
+  }
+
+  .hero-text {
+    padding-right: 0; /* Remove o espaçamento à direita em telas menores */
+  }
+
+  .hero-image {
+    margin-top: 20px; /* Adiciona um pouco de espaçamento acima da imagem em telas pequenas */
+  }
+
   .pricing-table {
     font-size: 0.9rem;
   }
@@ -189,26 +414,42 @@ footer p {
   }
 }
 
-.current-plan-container {
+/* Estilo para a barra de rolagem */
+::-webkit-scrollbar {
+  width: 8px; /* Largura da barra de rolagem */
+}
+
+::-webkit-scrollbar-track {
+  background: #2b2b2b; /* Cor do trilho da barra de rolagem */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ff6f00; /* Cor da barra de rolagem */
+  border-radius: 10px; /* Arredondamento da barra de rolagem */
+  border: 2px solid #2b2b2b; /* Deixa espaço ao redor da barra de rolagem */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #ff8f00; /* Cor da barra de rolagem ao passar o mouse */
+}
+
+/* Estilo para suavizar a rolagem */
+html {
+  scroll-behavior: smooth; /* Suaviza a rolagem ao clicar em âncoras */
+}
+
+.logo-title-container {
   display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
+  align-items: center;
+  
 }
 
-.current-plan-free {
-  margin-left: 15%;
-}
-
-.current-plan-basic {
-  margin-left: 50%;
-}
-
-.current-plan-pro {
-  margin-left: 85%;
-}
-
-.current-plan-label {
-  font-weight: bold;
-  color: green;
-  font-size: 16px;
+.logo {
+  width: 200px; /* Ajuste o tamanho da logo conforme necessário */  
+  margin-left: 500px;
+  margin-bottom: 20px;  
+  max-width: 100%;
+  height: auto;
+  
+  
 }
