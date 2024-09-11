@@ -4,6 +4,9 @@ from django.conf import settings
 logger = logging.getLogger('my_custom_logger')
 logger.setLevel(logging.DEBUG)
 
+# Configuração do cliente Twilio
+client_twilio = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
 google_news_api_key = settings.GOOGLE_NEWS_API_KEY
 max_daily_news = settings.MAX_NEWS_DAILY
 start_fetch_news = settings.START_FETCH_NEWS
@@ -34,6 +37,7 @@ def delete_previous_day_news():
 
 @shared_task
 def fetch_news_for_stocks():
+
     current_hour = datetime.now().hour  # Verifica a hora atual
 
     if start_fetch_news <= current_hour < end_fetch_news:
@@ -125,9 +129,11 @@ def send_daily_news_email(*args, **kwargs):
         news_content = "<div class='container'>"
 
         for acao in acoes:
+            
             noticias = Noticia.objects.filter(acao_selecionada=acao).order_by('-id')[:limite_noticias]
 
-            if noticias.exists():
+            if noticias:
+
                 news_content += f"<h2>{acao.simbolo} - {acao.nome}</h2><div class='news-cards'>"
                 
                 for noticia in noticias:
@@ -245,27 +251,39 @@ def check_and_save_dividend_news():
 
 @shared_task
 def monitor_news_for_pro_clients():
+    
     # Definir o fuso horário de Brasília (UTC-3)
-    brasilia_tz = pytz_timezone('America/Sao_Paulo')
+    brasilia_tz = pytz.timezone('America/Sao_Paulo')
     
     # Hora atual no fuso horário de Brasília
     current_time_brasilia = timezone.now().astimezone(brasilia_tz)
-    current_hour_brasilia = current_time_brasilia.hour  # Verifica a hora atual no fuso horário de Brasília
+    current_hour_brasilia = current_time_brasilia.hour  # Verifica a hora atual no fuso horário de Brasília    
 
-    if start_fetch_news <= current_hour_brasilia < end_fetch_news:
-    
+    if start_fetch_news <= current_hour_brasilia < end_fetch_news:       
+
         pro_clients = Cliente.objects.filter(plano__nome_plano="Pro")  # Buscar clientes com plano "Pro"
-        
+
         for cliente in pro_clients:
 
             # Buscar as ações selecionadas diretamente a partir do campo ManyToMany `tickers` do cliente
-            acoes = cliente.tickers.all()
+            acoes = cliente.tickers.all()                
 
             for acao in acoes:
 
                 # Buscar notícias desde a última verificação (último minuto)
-                from_time = current_time_brasilia - timedelta(minutes=1)
+                # from_time = current_time_brasilia - timedelta(minutes=1)
+                # url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt'
+               
+                # Calcula a data de ontem
+                yesterday = datetime.now() - timedelta(days=1)
+
+                # Formata a data de ontem para o formato ISO 8601 (necessário para a URL)
+                from_time = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
+
+                # Gera a URL com a data de ontem
                 url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt'
+                            
+                
                 response = requests.get(url)
                 news_data = response.json()
 
@@ -291,6 +309,69 @@ def monitor_news_for_pro_clients():
                                 if noticia:
                                     # Enviar a notícia por e-mail, já que o plano do cliente é "Pro"
                                     send_immediate_news_email(cliente.id, noticia.id)
+
+@shared_task
+def send_whatsapp_news():
+
+    logger.debug("TORCH CUDA IS AVAILABLE", torch.cuda.is_available())  # Verifica se a GPU está disponível
+    logger.debug("TORCH DEVICE", torch.cuda.current_device())
+    
+    # Definir o horário da última verificação (últimos 10 minutos)
+    intervalo_tempo = timezone.now() - timedelta(minutes=settings.WHATSAPP_NEWS_FETCH_INTERVAL+60)
+
+    # Selecionar clientes com plano Pro
+    pro_clients = Cliente.objects.filter(plano__nome_plano="Pro")  # Buscar clientes com plano "Pro"
+
+    # Iterar sobre os clientes Pro
+    for cliente in pro_clients:
+
+        # Verificar se há novas notícias para este cliente
+        novas_noticias = Noticia.objects.filter(
+            acao_selecionada__in=cliente.tickers.all(),  # Verifica notícias das ações selecionadas pelo cliente
+            data_publicacao__gte=intervalo_tempo  # Notícias publicadas nos últimos 10 minutos
+        )
+
+        # Se houver novas notícias, enviar via WhatsApp
+        if novas_noticias:
+
+            for noticia in novas_noticias:
+
+                # Inicializar o pipeline de sumarização
+                summarizer = pipeline("summarization", model="facebook/bart-large-cnn", device=0)
+                
+                try:
+                    resumo = summarizer(noticia.conteudo, max_length=100, min_length=30, do_sample=False)[0]['summary_text']
+                except Exception as e:
+                    resumo = noticia.conteudo  # Caso haja um erro ou o conteúdo seja pequeno, usar o conteúdo original
+
+                # Dividir o conteúdo em tópicos organizados
+                mensagem = (
+                    f"📰 *Nova notícia sobre a ação {noticia.acao_selecionada.nome} ({noticia.acao_selecionada.simbolo}):*\n\n"
+                    f"*🔹 Fonte:* {noticia.fonte}\n\n"
+                    f"*🔹 Data de publicação:* {noticia.data_publicacao.strftime('%d/%m/%Y %H:%M')}\n\n"
+                    f"*🔹 Resumo da notícia:*\n"
+                    f"{resumo}\n\n"
+                    f"*🔹 Leia mais no link abaixo:*\n{noticia.url if noticia.url else 'Nenhum link disponível'}"
+                )
+                
+                try:
+                    # Enviar a notícia pelo WhatsApp
+                    message = client_twilio.messages.create(
+                        body=mensagem,
+                        from_='whatsapp:' + settings.TWILIO_PHONE_NUMBER,                                                         
+                        to='whatsapp:' + f'+55{cliente.whatsapp}'
+                    )
+                    
+                    # Verificar o status da mensagem
+                    if message.status in ['queued', 'sending', 'sent']:
+                        logger.debug(f"Mensagem enviada com sucesso para {cliente.nome}: {message.sid}")
+                    elif message.status == 'delivered':
+                        logger.debug(f"Mensagem entregue com sucesso para {cliente.nome}.")
+                    elif message.status in ['undelivered', 'failed']:
+                        logger.debug(f"Falha ao enviar mensagem para {cliente.nome}: {message.status}")
+
+                except Exception as e:
+                    logger.debug(f"Erro ao enviar mensagem para {cliente.nome}: {str(e)}")   
 
 def send_immediate_news_email(cliente_id, noticia_id):
     try:

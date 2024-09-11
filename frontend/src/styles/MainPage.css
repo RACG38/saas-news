@@ -117,6 +117,7 @@ header {
 .hero-image img {
   max-width: 100%;
   height: auto;
+  width: 800px;
 }
 
 .cta-button {
@@ -138,23 +139,37 @@ header {
 .benefits-section {
   padding: 100px 0;
   background-color: #f0f0f0;
-  width: 100vw; /* Estende a seção de benefícios por toda a largura */
+  width: 100vw; /* Estende a seção de benefícios por toda a largura */  
+  align-items: center; /* Centraliza verticalmente */
+  justify-content: center; /* Centraliza horizontalmente */
+}
+
+.benefits-section .container {
+  max-width: 1000px; /* Define uma largura máxima para a centralização */
+  width: 100%;
+  padding: 20px;
+  margin: 0 auto; /* Centraliza horizontalmente */
+  text-align: left; /* Garante o alinhamento à esquerda dentro da seção */
 }
 
 .benefits-section h2 {
   font-size: 36px;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   color: #1E3A5F; /* Texto claro */
+  margin-left: 100px;
 }
 
 .benefits-section ul {
   list-style-type: none;
 }
 
-.benefits-section li {
-  font-size: 18px;
+.benefits-section li {  
   margin: 10px 0;
   color: #1E3A5F; /* Texto suave */
+  text-align: left !important;
+  margin-bottom: 10px; /* Espaçamento entre os itens da lista */  
+  font-size: 1rem; /* Ajuste o tamanho da fonte */
+  line-height: 1.5; /* Linha mais espaçada para melhor legibilidade */
 }
 
 /* Seção de Comparação */
@@ -218,18 +233,19 @@ header {
   align-items: center;
 }
 
-.icon-cross {
+.cross-icon {
   color: #ff4d4d !important;
+  font-weight: bold;
   margin-right: 10px;
-  font-size: 20px;
+  font-size: 25px;
 }
 
-.icon-check {
-  color: #00c853 !important;
-  margin-right: 10px;
-  font-size: 20px;
+.check-icon {
+  color: #00c853 !important; /* Cor verde para o ícone de check */
+  font-weight: bold; /* Destaque o ícone com peso maior */
+  margin-right: 10px; /* Espaço entre o ícone e o texto */
+  font-size: 25px;
 }
-
 
 /* Seção de Depoimentos */
 .testimonials-section {
@@ -265,14 +281,16 @@ header {
 
 /* Tabela de preços com bordas arredondadas e espaçamento entre linhas */
 .pricing-table {
-  width: auto; /* Ajusta a largura ao conteúdo da tabela */
-  margin: 0 auto; /* Centraliza a tabela */
-  border-collapse: separate; /* Permite que o border-radius e o border-spacing funcionem */
-  border-spacing: 0 10px; /* Adiciona espaçamento de 10px entre as linhas */
+  width: 100%;
+  margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 10px 10px;
   margin-top: 20px;
 }
 
-.pricing-table th, .pricing-table td {
+/* Estilo para as células da tabela */
+.pricing-table th, 
+.pricing-table td {
   border: 1px solid #444;
   padding: 15px;
   text-align: center;
@@ -280,66 +298,60 @@ header {
 
 /* Estilo para o cabeçalho da tabela */
 .pricing-table th {
-  background-color: #ff6f00; /* Cor de fundo para o cabeçalho */
-  color: #f0f0f0; /* Texto claro no cabeçalho */
-  font-weight: bold; /* Deixa o texto em negrito */
+  background-color: #ff6f00;
+  color: #f0f0f0;
+  font-weight: bold;
   padding: 15px;
   text-align: center;
-  border: 1px solid #444; /* Mantém a borda igual ao restante da tabela */
+  border: 1px solid #444;
 }
 
 /* Alternância de cor entre linhas */
 .pricing-table tr:nth-child(odd) td {
-  background-color: #2b2b2b; /* Cor mais escura para linhas ímpares */
-  color: #d3d3d3; /* Texto suave */
+  background-color: #2b2b2b;
+  color: #d3d3d3;
 }
 
 .pricing-table tr:nth-child(even) td {
-  background-color: #383838; /* Cor mais clara para linhas pares */
-  color: #f0f0f0; /* Texto mais claro */
+  background-color: #383838;
+  color: #f0f0f0;
 }
 
-/* Arredondando a primeira e última célula de cada linha */
-.pricing-table tr:first-child th:first-child {
-  border-top-left-radius: 12px; /* Arredonda o canto superior esquerdo */
+/* Arredondando a primeira e última célula de cada linha (cabeçalho) */
+.pricing-table thead th:first-child {
+  border-top-left-radius: 12px;
 }
 
-.pricing-table tr:first-child th:last-child {
-  border-top-right-radius: 12px; /* Arredonda o canto superior direito */
+.pricing-table thead th:last-child {
+  border-top-right-radius: 12px;
 }
 
-.pricing-table tr:last-child td:first-child {
-  border-bottom-left-radius: 12px; /* Arredonda o canto inferior esquerdo */
+/* Arredondando a primeira e última célula de cada linha (corpo da tabela) */
+.pricing-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
 }
 
-.pricing-table tr:last-child td:last-child {
-  border-bottom-right-radius: 12px; /* Arredonda o canto inferior direito */
+.pricing-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
 }
 
-/* Arredondando as bordas das células laterais de todas as linhas da tabela */
-.pricing-table tr td:first-child {
+/* Arredondando as bordas laterais de todas as linhas da tabela */
+.pricing-table tbody tr td:first-child {
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
 }
 
-.pricing-table tr td:last-child {
+.pricing-table tbody tr td:last-child {
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;
 }
 
-.pricing-table tr th:first-child {
+.pricing-table thead th:first-child {
   border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
 }
 
-.pricing-table tr th:last-child {
+.pricing-table thead th:last-child {
   border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-.check-icon {
-  color: #4caf50;
-  font-size: 35px;
 }
 
 /* Botões dos planos */

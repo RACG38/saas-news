@@ -45,4 +45,8 @@ app.conf.beat_schedule = {
         'task': 'noticias.tasks.delete_unassociated_tokens',  
         'schedule': crontab(hour=settings.DELETE_TOKENS_INTERVAL_HOUR, minute=settings.DELETE_TOKENS_INTERVAL_MINUTE),  
     },
+    'send-whatsapp-news': {
+        'task': 'noticias.tasks.send_whatsapp_news',
+        'schedule': crontab(minute=f'*/{settings.WHATSAPP_NEWS_FETCH_INTERVAL}'),  
+    },
 }

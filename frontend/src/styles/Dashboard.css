@@ -7,6 +7,7 @@ body {
     padding: 0;
     box-sizing: border-box;
     overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
 
 }
 
@@ -24,6 +25,7 @@ body {
 
 }
 
+/* Define a estrutura geral do menu */
 .sidebar {
     width: 30vw;
     height: 100vh;
@@ -35,12 +37,89 @@ body {
     margin-top: 0;
     box-sizing: border-box;
     overflow-y: auto;
+    background: linear-gradient(135deg, #4a4956, #2c2a3f);
+    transition: all 0.3s ease;
 }
 
+/* Cada seção do menu */
+.rounded-box {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid #ff6f00; /* Cor da borda verde */
+    border-radius: 15px; /* Arredondamento da borda */
+    padding: 15px; /* Espaço interno */
+    padding-bottom: 20px;
+    margin-bottom: 20px; /* Espaço inferior */
+    background-color: rgba(255, 255, 255, 0.2); /* Fundo branco transparente */
+    backdrop-filter: blur(5px); /* Efeito de desfoque no fundo */
+}
+
+
+
+/* Estilo para parágrafos do menu */
 .sidebar p {
     margin-bottom: 20px;    
-    font-size: 1rem;    
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ffffff; 
 }
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+/* Botões da sidebar */
+.sidebar-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    font-size: 1.1rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-shadow: #120c2b;
+}
+
+h3.custom-heading {
+    font-size: 1.5rem;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Exemplo de seção adicional (exemplo de logout) */
+.logout-section {
+    margin-top: auto; /* Empurra essa seção para o final da sidebar */
+}
+
+/* Exemplo de outra seção com espaçamento maior */
+.large-section {
+    margin-bottom: 50px; /* Espaçamento maior entre essa seção e a próxima */
+}
+
+.sidebar-button:hover {
+    background-color: #3a9a48;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Outros estilos que permanecem os mesmos */
+.sidebar-button.save:hover {
+    background-color: #45a049;
+}
+
+.sidebar-button.clear-selection {
+    background-color: #f44336;
+}
+
+.sidebar-button.clear-selection:hover {
+    background-color: #d32f2f;
+}
+
 
 
 .stocks-section {
@@ -337,41 +416,46 @@ body {
     background-color: #45a049;
 }
 
+.menu-section-plan {
+
+    text-align: center;
+}
+
 .upgrade-plan-link {
-    color: #39c44c;
-    text-decoration: underline;
+    color: #ff6f00;    
     cursor: pointer;
     font-weight: bold;    
     transition: color 0.3s ease;
     margin-top: 20px;
     font-size: 1.2rem !important; /* Garante que o tamanho da fonte seja aplicado */
-    border: 2px solid #39c44c; /* Adiciona uma borda de 2px com a mesma cor do texto */
+    border: 2px solid #ff6f00; /* Adiciona uma borda de 2px com a mesma cor do texto */
     padding: 5px; /* Adiciona um pouco de espaço interno entre o texto e a borda */
     border-radius: 5px; /* Arredonda os cantos da borda */
 }
 
 .upgrade-plan-link:hover {
-    color: #89b9ec;
-    border-color: #89b9ec; /* Altera a cor da borda ao passar o mouse */
-    text-decoration: none;
+    color: #f0f0f0;
+    border-color: #f0f0f0; /* Altera a cor da borda ao passar o mouse */
+    text-decoration: underline;
 }
 
 .sidebar-button.cancel-subscription {
     background-color: #976ee4; /* Cor de fundo do botão (tom de vermelho tomate) */
     color: white;
     padding: 15px;
-    margin-top: 200px;
+    margin-top: 150px;
     font-size: 1.1rem;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
     width: 100%;
 }
 
 .sidebar-button.cancel-subscription:hover {
     background-color: #5418e0; /* Cor de fundo ao passar o mouse (tom de vermelho mais escuro) */
+    transform: translateY(-2px);
 }
 
 

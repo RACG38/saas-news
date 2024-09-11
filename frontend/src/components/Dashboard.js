@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCogs } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Dashboard.css';
 
 const getStockImagePath = async (symbol) => {
@@ -238,24 +239,32 @@ const Dashboard = () => {
         <div className="dashboard">
             <div className="sidebar">
                 <h3 className="custom-heading">Painel de configurações da conta</h3>
-                <p><strong>Olá </strong> {userData.cliente ? userData.cliente.nome : 'N/A'}</p>
-                <p><strong>Plano </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>               
-                <p><strong>Quantidade de Ativos:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_ativos : 'N/A'}</p>
-                <p><strong>Quantidade de Notícias:</strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_noticias : 'N/A'}</p>
 
-                <div style={{ flexGrow: 1 }}></div>
+                {/* Primeira seção do menu */}
+                <div className="menu-section rounded-box">
+                    <p><FontAwesomeIcon icon={faUser} /><strong> Olá, </strong> {userData.cliente ? userData.cliente.nome : 'N/A'}</p>
+                    <p><FontAwesomeIcon icon={faCogs} /><strong> Plano atual: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>
+                    <p><strong>Ativos para selecionar: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_ativos : 'N/A'}</p>
+                    <p><strong>Notícias de cada ação selecionada: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_noticias : 'N/A'}</p>
+                </div>
 
-                <button onClick={handleSave} className="sidebar-button save">Salvar Seleção</button>
-                
-                <button onClick={handleClearSelection} className="sidebar-button clear-selection">Limpar Seleção</button>
+                {/* Seção dos botões */}
+                <div className="menu-section">
+                    <button onClick={handleSave} className="sidebar-button save">Salvar Seleção</button>
+                    <button onClick={handleClearSelection} className="sidebar-button clear-selection">Limpar Seleção</button>
+                </div>
 
-                <p onClick={handleChangePlanClick} className="upgrade-plan-link">
-                    Quero mudar o meu plano
-                </p>
-                <button onClick={handleOpenCancelModal} className="sidebar-button cancel-subscription">
-                    Cancelar Assinatura
-                </button>
-                            
+                {/* Seção para mudança de plano */}
+                <div className="menu-section-plan">
+                    <p onClick={handleChangePlanClick} className="upgrade-plan-link">
+                        Quero mudar o meu plano
+                    </p>
+                    <button onClick={handleOpenCancelModal} className="sidebar-button cancel-subscription">
+                        Cancelar Assinatura
+                    </button>
+                </div>
+
+                {/* Seção de logout */}
                 <div className="logout-container" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faSignOutAlt} size="2x" className="logout-icon" />
                     <span className="logout-text">LOG OUT</span>
@@ -359,7 +368,7 @@ const Dashboard = () => {
                         <button onClick={() => setShowLimitModal(false)}>Fechar</button>
                     </div>
                 </div>
-            )}
+            )}            
         </div>
     );
 };

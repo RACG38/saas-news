@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import '../styles/MainPage.css'; // Certifique-se de que o arquivo CSS está corretamente importado
 
 const MainPage = () => {
@@ -52,7 +54,7 @@ const MainPage = () => {
           <div className="logo-title-container">
             {/* Caminho relativo para a imagem na pasta public */}
             <h1>StockHub News</h1>
-            <img src="/stockhub_news_logo.png" alt="Logo StockHub News" className="logo" />            
+            <img src="/stockhubnews_logo.png" alt="Logo StockHub News" className="logo" />            
           </div>
           <nav>
             <ul className="nav-menu">
@@ -85,38 +87,38 @@ const MainPage = () => {
         <div className="container">
           <h2>Por que escolher nosso serviço?</h2>
           <ul>
-            <li>✔ Notícias em tempo real: mantenha-se informado sobre todas as suas ações cadastradas.</li>
-            <li>✔ Alertas personalizados: receba notificações diretamente no seu email ou WhatsApp.</li>
-            <li>✔ Acesso a análises de sentimento: descubra o que o mercado está dizendo sobre suas ações.</li>
-            <li>✔ Planos acessíveis para diferentes necessidades de investidores.</li>
+            <li><span className="check-icon">✔</span> Notícias em tempo real: mantenha-se informado sobre todas as suas ações cadastradas.</li>
+            <li><span className="check-icon">✔</span> Alertas personalizados: receba notificações diretamente no seu email ou WhatsApp.</li>
+            <li><span className="check-icon">✔</span> Acesso a análises de sentimento: descubra o que o mercado está dizendo sobre suas ações.</li>
+            <li><span className="check-icon">✔</span> Planos acessíveis para as diferentes necessidades dos investidores.</li>
           </ul>
         </div>
       </section>
       {/* Seção de comparação com e sem o  plano*/}
       <section class="comparison-section">
         <div class="container">
-          <h2>Uma ferramenta obrigatória para quem leva a sério os seus investimentos...</h2>
-          <p>Essa é a diferença entre os 99,99% dos investidores que não ganham dinheiro para os outros 0,01% que ganham</p>
+          <h2>Uma ferramenta obrigatória para quem leva a sério os seus investimentos</h2>
+          {/* <p>Essa é a diferença entre os 99,99% dos investidores que não ganham dinheiro para os outros 0,01% que ganham</p> */}
           
           <div class="comparison-cards">
             <div class="comparison-card negative">
               <h3>Sem o StockHub News</h3>
               <ul>
-                <li><span class="icon-cross">✖</span> Buscar informação em várias fontes diferentes</li>
-                <li><span class="icon-cross">✖</span> Muito trabalho e pouco resultado</li>
-                <li><span class="icon-cross">✖</span> Poucas notícias direcionadas às suas ações</li>
-                <li><span class="icon-cross">✖</span> Não é avisado de eventos importantes das suas ações</li>
-                <li><span class="icon-cross">✖</span> Pouca informação para tomar decisões assertivas</li>
+                <li><FontAwesomeIcon icon={faTimesCircle} className="cross-icon"/> Buscar informação em várias fontes diferentes</li>
+                <li><FontAwesomeIcon icon={faTimesCircle} className="cross-icon"/> Muito trabalho e pouco resultado</li>
+                <li><FontAwesomeIcon icon={faTimesCircle} className="cross-icon"/> Poucas notícias direcionadas às suas ações</li>
+                <li><FontAwesomeIcon icon={faTimesCircle} className="cross-icon"/> Não é avisado de eventos importantes das suas ações</li>
+                <li><FontAwesomeIcon icon={faTimesCircle} className="cross-icon"/> Pouca informação para tomar decisões assertivas</li>
               </ul>
             </div>
             <div class="comparison-card positive">
               <h3>Com o StockHub News</h3>
               <ul>
-                <li><span class="icon-check">✔</span> Única fonte de informações e notícias</li>
-                <li><span class="icon-check">✔</span> Sempre atualizado de acontecimentos do mercado</li>
-                <li><span class="icon-check">✔</span> Por dentro dos principais eventos das suas ações</li>
-                <li><span class="icon-check">✔</span> Notícias em tempo real, por email e whatsapp</li>
-                <li><span class="icon-check">✔</span> Alerta de recebimento de dividendos e data-com das suas ações</li>
+                <li><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /> Única fonte de informações e notícias</li>
+                <li><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /> Sempre atualizado de acontecimentos do mercado</li>
+                <li><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /> Por dentro dos principais eventos das suas ações</li>
+                <li><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /> Notícias em tempo real, por email e whatsapp</li>
+                <li><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /> Alerta de recebimento de dividendos e data-com das suas ações</li>
               </ul>
             </div>
           </div>
@@ -155,39 +157,39 @@ const MainPage = () => {
             <tbody>
               <tr>
                 <td>Recebimento de notícias diariamente</td>
-                <td><span className="check-icon">&#10003;</span></td>
-                <td><span className="check-icon">&#10003;</span></td>
-                <td><span className="check-icon">&#10003;</span></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
                 <td>Notícias enviadas por e-mail</td>
-                <td><span className="check-icon">&#10003;</span></td>
-                <td><span className="check-icon">&#10003;</span></td>
-                <td><span className="check-icon">&#10003;</span></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
                 <td>Notícias enviadas por WhatsApp</td>
                 <td>---</td>
-                <td><span className="check-icon">&#10003;</span></td>
-                <td><span className="check-icon">&#10003;</span></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
                 <td>Aviso de pagamento de dividendos por e-mail</td>
                 <td>---</td>
-                <td><span className="check-icon">&#10003;</span></td>
-                <td><span className="check-icon">&#10003;</span></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
                 <td>Recebimento de notícias das suas ações em tempo real</td>
                 <td>---</td>
                 <td>---</td>
-                <td><span className="check-icon">&#10003;</span></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
                 <td>Análise de sentimento das suas ações</td>
                 <td>---</td>
                 <td>---</td>
-                <td><span className="check-icon">&#10003;</span></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
                 <td>Quantidade de ações para cadastrar</td>
