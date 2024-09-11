@@ -1,4 +1,1 @@
-git status
-git add .
-git commit -m "Versão atualizada"
-git push origin main
+cd Área\ de\ trabalho/Projetos\ Python/Desenvolvimento/saas-news/ && git status && git add . && git commit -m "Versão atualizada em $(date +'%d/%m/%Y')" && git push origin main
