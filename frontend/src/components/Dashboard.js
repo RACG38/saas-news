@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { faUser, faCogs } from '@fortawesome/free-solid-svg-icons';
+import { faCommentDots } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Dashboard.css';
 
 const getStockImagePath = async (symbol) => {
@@ -45,6 +46,19 @@ const Dashboard = () => {
     useEffect(() => {
         fetchImages();
     }, [navigate]);
+
+    const handleFeedbackClick = () => {
+        if (userData && userData.cliente) {
+            navigate('/feedback', {
+                state: {
+                    nome: userData.cliente.nome,
+                    email: userData.cliente.email
+                }
+            });
+        } else {
+            console.error("Dados do usuário não estão disponíveis.");
+        }
+    };    
 
     const getPlanoId = (planName) => {
         const planMap = {
@@ -368,7 +382,18 @@ const Dashboard = () => {
                         <button onClick={() => setShowLimitModal(false)}>Fechar</button>
                     </div>
                 </div>
-            )}            
+            )} 
+
+            {/* Ícone de Feedback e Texto */}
+            <div className="feedback-container" onClick={handleFeedbackClick}>
+                <div className="feedback-icon">
+                    <FontAwesomeIcon icon={faCommentDots} size="2x" />
+                </div>
+                <div className="feedback-text">
+                    Feedback e suporte
+                </div>
+            </div>
+        
         </div>
     );
 };

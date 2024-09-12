@@ -409,9 +409,10 @@ const CheckoutForm = () => {
                         onChange={() => setTermsAccepted(!termsAccepted)}
                     />
                     <label htmlFor="termsAccepted">
-                        Eu estou ciente e de acordo com os <a href="/termos" target="_blank">Termos de uso</a>
+                        Eu estou ciente e de acordo com os <a href="/termo-de-uso" target="_blank">Termos de uso</a>
                     </label>
                 </div>
+
                 <button type="submit" disabled={!stripe || loading || !termsAccepted}>
                     {loading ? 'Processando...' : `Pagar ${selectedPlan.price}`}
                 </button>

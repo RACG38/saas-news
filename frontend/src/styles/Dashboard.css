@@ -443,7 +443,7 @@ h3.custom-heading {
     background-color: #976ee4; /* Cor de fundo do botão (tom de vermelho tomate) */
     color: white;
     padding: 15px;
-    margin-top: 150px;
+    margin-top: 120px;
     font-size: 1.1rem;
     border: none;
     border-radius: 5px;
@@ -458,4 +458,29 @@ h3.custom-heading {
     transform: translateY(-2px);
 }
 
+/* Estilo para o ícone de feedback */
+/* Contêiner para o ícone e texto */
+.feedback-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
 
+.feedback-icon {
+    background-color: #ff8f00;
+    color: white;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 10px;
+}
+
+/* Texto ao lado do ícone */
+.feedback-text {
+    color: #ff8f00;
+    font-size: 16px;
+    font-weight: bold;        
+}

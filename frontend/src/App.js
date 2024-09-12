@@ -7,8 +7,10 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';  
 import TokenVerification from './components/TokenVerification';
 import ResetPassword from './components/ResetPassword';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import Feedback from './components/Feedback';
 import CheckoutForm from './components/CheckoutForm';
+import TermoDeUso from './components/TermoDeUso';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -46,9 +48,19 @@ const App = () => {
                         isAuthenticated() ? <Dashboard /> : <Navigate to="/mainpage" />
                     }
                 />
+                
+                {/* Proteger a rota de Feedback */}
+                <Route 
+                    path="/feedback" 
+                    element={
+                        isAuthenticated() ? <Feedback /> : <Navigate to="/login" />
+                    } 
+                />
+                
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
                 <Route path="/verify-token" element={<TokenVerification />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/termo-de-uso" element={<TermoDeUso />} />
                 <Route path="*" element={<Navigate to="/mainpage" />} />
             </Routes>
         </Router>

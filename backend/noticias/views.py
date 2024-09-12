@@ -8,6 +8,31 @@ logger = logging.getLogger('my_custom_logger')
 
 logger.setLevel(logging.DEBUG)
 
+def enviar_email_feedback(nome, email, mensagem):
+    subject = f'Feedback recebido de {nome}'
+    
+    # Contexto para o e-mail
+    email_context = {
+        'nome': nome,
+        'email': email,
+        'mensagem': mensagem,
+    }
+    
+    # Renderizar a mensagem HTML
+    email_template = 'email/feedback.html'
+    html_message = render_to_string(email_template, email_context)
+    plain_message = strip_tags(html_message)
+    
+    # Enviar o e-mail
+    send_mail(
+        subject,
+        plain_message,
+        settings.DEFAULT_FROM_EMAIL,
+        ['renan.acg7@gmail.com'],  # E-mail de destino
+        html_message=html_message,
+        fail_silently=False,
+    )
+
 def enviar_email_free(cliente, change_plan_flag):
 
     email_template = 'email/welcome_free.html'
@@ -290,7 +315,7 @@ class RegisterView(APIView):
                 cliente.save()      
 
                 
-                if plan_id == 1:  
+                if plan_id == 1:                    
 
                     # Criar ou atualizar o token de redefinição de senha no banco de dados
                     token_obj, created = Token.objects.update_or_create(
@@ -312,7 +337,7 @@ class RegisterView(APIView):
                                 
                                 }                      
 
-                    ) 
+                    )                        
 
                     # Verifica se o cliente já possui uma assinatura ativa. Se tiver, irá ser cancelada
                     existing_subscriptions = stripe.Subscription.list(customer=customer.id, status='active')
@@ -642,7 +667,24 @@ class DashboardView(APIView):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
+class FeedbackView(APIView):
 
+    def post(self, request, *args, **kwargs):
 
+        try:
+            data = request.data  
+            nome = data.get('nome')
+            email = data.get('email')
+            mensagem = data.get('mensagem')
+
+            if nome and email and mensagem:
+                # Chama a função para enviar o email de feedback
+                enviar_email_feedback(nome, email, mensagem)
+                return Response({'message': 'Feedback enviado com sucesso!'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Todos os campos são obrigatórios.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     

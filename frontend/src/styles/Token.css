@@ -6,6 +6,7 @@
     padding: 20px;
     text-align: center;
     font-family: Arial, sans-serif;
+    box-shadow: 0px 4px 8px #ff8f00;
 }
 
 .token-verification-container h2 {

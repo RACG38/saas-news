@@ -26,7 +26,7 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=settings.FETCH_AND_SEND_DAILY_NEWS_INTERVAL_HOUR, minute=settings.FETCH_AND_SEND_DAILY_NEWS_INTERVAL_MINUTE),
     },
     'monitor-news-pro': {
-        'task': 'noticias.tasks.monitor_news_for_pro_clients',
+        'task': 'noticias.tasks.monitor_news_for_pro_clients_chain',
         'schedule': crontab(minute=f'*/{settings.PRO_MONITOR_NEWS_INTERVAL_MINUTES}'),
     },
     'delete-previous-day-news': {
@@ -45,8 +45,5 @@ app.conf.beat_schedule = {
         'task': 'noticias.tasks.delete_unassociated_tokens',  
         'schedule': crontab(hour=settings.DELETE_TOKENS_INTERVAL_HOUR, minute=settings.DELETE_TOKENS_INTERVAL_MINUTE),  
     },
-    'send-whatsapp-news': {
-        'task': 'noticias.tasks.send_whatsapp_news',
-        'schedule': crontab(minute=f'*/{settings.WHATSAPP_NEWS_FETCH_INTERVAL}'),  
-    },
+   
 }

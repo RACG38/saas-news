@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faTimesCircle, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import '../styles/MainPage.css'; // Certifique-se de que o arquivo CSS está corretamente importado
 
 const MainPage = () => {
@@ -10,6 +10,7 @@ const MainPage = () => {
   const { plan_id, nome, email, change_plan } = location.state || {};
  
   const pricingRef = useRef(null);  // Referência para a seção de planos
+  const [expandedQuestion, setExpandedQuestion] = useState(null);  // Controle para expandir respostas
 
   const handleCheckoutClick = (selectedPlanName) => {
     if (change_plan && selectedPlanName === 'Free' && plan_id !== 1) {
@@ -44,6 +45,11 @@ const MainPage = () => {
   // Função para rolar para a seção de planos
   const scrollToPricing = () => {
     pricingRef.current.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Função para alternar visibilidade da resposta
+  const toggleAnswer = (questionIndex) => {
+    setExpandedQuestion(expandedQuestion === questionIndex ? null : questionIndex);
   };
 
   return (
@@ -241,6 +247,145 @@ const MainPage = () => {
             {isCurrentPlan(1) && <span className="current-plan-label current-plan-free">Seu plano atual</span>}
             {isCurrentPlan(2) && <span className="current-plan-label current-plan-basic">Seu plano atual</span>}
             {isCurrentPlan(3) && <span className="current-plan-label current-plan-pro">Seu plano atual</span>}
+          </div>
+        </div>
+      </section>
+
+      {/* Seção de FAQ */}
+      <section className="faq-section">
+        <div className="container">
+          <h2>Dúvidas Frequentes</h2>
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(1)}>
+              <span>Como posso me inscrever para receber as notícias em tempo real?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 1 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 1 && (
+              <div className="faq-answer">
+                <p>Basta descer até a tabela de Planos e escolher o que melhor se encaixa na sua estratégia de atualização sobre as ações do mercado brasileiro.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(2)}>
+              <span>Quais ações são cobertas pelas notícias enviadas?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 2 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 2 && (
+              <div className="faq-answer">
+                <p>Todas as ações listadas na B3, de empresas ativas (que ainda estão operacionais), são cobertas pelo StockHub News.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(3)}>
+              <span>Posso personalizar as ações que quero acompanhar?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 3 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 3 && (
+              <div className="faq-answer">
+                <p>Não. Dentro de cada plano, é possível selecionar uma quantidade máxima de ações para receber as notícias.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(4)}>
+              <span>Como as notícias são enviadas para o meu WhatsApp e email?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 4 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 4 && (
+              <div className="faq-answer">
+                <p>As notícias são enviadas através do seu número de WhatsApp e e-mail cadastrados, após a escolha do plano na tabela de planos.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(5)}>
+              <span>Com que frequência receberei notícias sobre as minhas ações?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 5 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 5 && (
+              <div className="faq-answer">
+                <p>Os planos Free e Basic permitem o recebimento de notícias ao final do pregão. No plano Pro, o recebimento das notícias começa antes do pregão iniciar e continua até o final do pregão diário da B3. Durante todo esse período, você receberá as notícias das suas ações em tempo real, tanto por e-mail quanto por WhatsApp.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(6)}>
+              <span>As notícias incluem informações sobre dividendos e outros eventos relevantes?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 6 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 6 && (
+              <div className="faq-answer">
+                <p>Sim, em todos os planos.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(7)}>
+              <span>Há algum limite de notícias que posso receber diariamente?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 7 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 7 && (
+              <div className="faq-answer">
+                <p>Sim. No plano Free, o limite é de duas notícias por ação selecionada. No plano Basic, o limite é de três notícias por ação, e no plano Pro, você pode receber até cinco notícias por ação. A quantidade mínima de notícias depende do volume de informações divulgadas sobre as suas ações pelas maiores fontes de notícias no dia.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(8)}>
+              <span>Posso cancelar ou modificar minha assinatura?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 8 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 8 && (
+              <div className="faq-answer">
+                <p>Sim, a qualquer momento. Após criar sua conta e escolher seu plano, o painel do seu dashboard de ações exibirá um botão "Quero mudar meu plano". Logo abaixo, estará disponível o botão "Cancelar assinatura", caso deseje encerrar sua assinatura, independentemente do plano escolhido.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(9)}>
+              <span>O serviço de notícias em tempo real também cobre ações internacionais?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 9 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 9 && (
+              <div className="faq-answer">
+                <p>Não, o serviço cobre apenas ações brasileiras listadas na B3.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="faq-item">
+            <div className="faq-question" onClick={() => toggleAnswer(10)}>
+              <span>Quais são os planos disponíveis e as principais diferenças entre eles?</span>
+              <FontAwesomeIcon icon={expandedQuestion === 10 ? faChevronUp : faChevronDown} />
+            </div>
+            {expandedQuestion === 10 && (
+              <div className="faq-answer">
+                <p>Os planos Free e Basic permitem o envio de notícias, ao final do pregão, apenas por e-mail. O plano Pro, além de permitir o envio por e-mail e WhatsApp, oferece notícias em tempo real e informações sobre fatos relevantes e dividendos anunciados pelas empresas que você selecionar.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Seção de Selo de Garantia */}
+      <section className="guarantee-section">
+        <div className="container">
+          <div className="guarantee-content">
+            <img src="/selo_garantia_7dias.png" alt="Selo de Qualidade e Garantia" className="guarantee-badge" />
+            <div className="guarantee-text">
+              <h3>Satisfação Garantida</h3>
+              <p>Estamos tão confiantes na qualidade do nosso serviço que oferecemos uma <strong>garantia de 7 dias</strong>. Caso você não esteja satisfeito com o StockHub News, devolvemos o seu dinheiro.</p>
+            </div>
           </div>
         </div>
       </section>

@@ -4,14 +4,14 @@
 .login-container {
     max-width: 500px;          /* Define a largura máxima da caixa de login */
     padding: 40px;             /* Espaçamento interno */
-    border: 1px solid #ccc;    /* Borda ao redor da caixa */
+    border: 1px solid #ff8f00;    /* Borda ao redor da caixa */
     border-radius: 8px;        /* Arredondamento */
-    background-color: #fff;    /* Fundo da caixa */
+    background-color: #f0f0f0;    /* Fundo da caixa */
     text-align: center;        /* Alinha o texto dentro da caixa */
-    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Adiciona sombra */
     margin-right: 30px;           /* Certifica que não haja margem à direita */
     margin-left: auto;         /* Alinha automaticamente à direita */
     margin-top: 300px;
+    box-shadow: 0px 4px 8px #ff8f00; 
 }
 
 .login-container h2 {
@@ -28,7 +28,7 @@
     width: 95%;               /* Aumenta a largura dos inputs */
     padding: 12px;            /* Aumenta o padding dos inputs */
     margin: 10px 0;
-    border: 2px solid #ccc;
+    border: 2px solid #ff8f00;
     border-radius: 4px;
 }
 

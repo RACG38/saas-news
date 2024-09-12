@@ -3,12 +3,12 @@
     max-width: 500px; /* Aumenta a largura do menu */
     padding: 30px; /* Aumenta o padding para mais espaço interno */
     font-family: Arial, sans-serif;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;    
     border-radius: 8px;
     position: absolute;
     right: 50px; /* Aumenta a distância da borda direita da tela */
     top: 15%; /* Ajusta a posição vertical para centralizar melhor */
+    box-shadow: 0px 4px 8px #ff8f00; 
 }
 
 .registration-container h2 {
@@ -29,7 +29,7 @@
     padding: 12px; /* Aumenta o padding dos inputs */
     margin: 10px 0;
     display: inline-block;
-    border: 1px solid #ccc;
+    border: 1px solid #ff8f00;
     box-sizing: border-box;
     border-radius: 4px; /* Adiciona bordas arredondadas */
 }

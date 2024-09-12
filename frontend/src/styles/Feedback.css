@@ -1,0 +1,85 @@
+/* Estilo geral do container do formulário */
+.feedback-form-container {
+    max-width: 600px;
+    margin: 40px auto;  /* Adiciona margem superior e centraliza horizontalmente */
+    padding: 30px;
+    background-color: rgba(0, 0, 0, 0.8);  /* Fundo escuro com transparência */
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px #ff8f00; /* Sombra mais pronunciada */
+    display: flex;
+    flex-direction: column;  /* Organiza os itens em coluna */
+    align-items: center;     /* Centraliza os itens horizontalmente */
+}
+
+/* Estilo do título */
+.feedback-form-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #f0f0f0 !important; /* Título em cor branca */
+    font-size: 24px;
+}
+
+
+/* Estilo dos rótulos dos campos */
+.feedback-form label {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #f0f0f0; /* Texto dos rótulos em branco */
+    text-align: left;  /* Mantém o texto alinhado à esquerda */
+}
+
+/* Estilo dos inputs e textareas */
+.feedback-form input,
+.feedback-form textarea {
+    width: 100%;
+    padding: 12px;  /* Aumenta o padding para inputs mais confortáveis */
+    margin-bottom: 20px;
+    border: 1px solid #ff8f00;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #333; /* Fundo escuro para inputs */
+    color: #fff;  /* Texto claro nos campos de input */
+    box-sizing: border-box;  /* Garante que o padding e a borda estejam incluídos na largura total */
+}
+
+/* Estilo do textarea para feedback */
+.feedback-form textarea {
+    resize: vertical;  /* Permite redimensionar verticalmente, mas não horizontalmente */
+    min-height: 150px;  /* Define uma altura mínima para o textarea */
+}
+
+/* Estilo do botão de enviar */
+.feedback-form button {
+    width: 100%;
+    padding: 15px;  /* Aumenta o tamanho do botão */
+    background-color: #ff8f00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+/* Estilo do botão desativado */
+.feedback-form button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Efeito hover no botão habilitado */
+.feedback-form button:hover:enabled {
+    background-color: #e07b00;
+}
+
+.spinner {
+    margin-top: 15px;  /* Espaçamento entre o botão e o spinner */
+    margin-left: 180px;
+    font-size: 100px;
+    text-align: center;
+    display: flex; /* Para centralizar o spinner em relação ao botão */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Alinha verticalmente */
+}

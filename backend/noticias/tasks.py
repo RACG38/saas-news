@@ -36,73 +36,74 @@ def delete_previous_day_news():
     Noticia.objects.filter(data_publicacao__date=yesterday).delete()
 
 @shared_task
-def fetch_news_for_stocks():
+def fetch_news_for_stocks():    
 
-    current_hour = datetime.now().hour  # Verifica a hora atual
+    acoes = AcaoSelecionada.objects.all()
+    today_date = datetime.today().date()
 
-    if start_fetch_news <= current_hour < end_fetch_news:
-        acoes = AcaoSelecionada.objects.all()
-        today_date = datetime.today().date()
+    for acao in acoes:
+        query = f'{acao.simbolo} OR {acao.nome}'
 
-        for acao in acoes:
-            query = f'{acao.simbolo} OR {acao.nome}'
+        url = (
+            f'https://newsapi.org/v2/everything?q={query}'
+            f'&from={today_date}'
+            f'&sortBy=publishedAt'
+            f'&apiKey={google_news_api_key}'
+            f'&language=pt'
+            f'&pageSize={settings.MAX_NEWS_DAILY}'
+            f'&domains={",".join(settings.DOMAIN_NEWS)}'
+        )
+        
+        response = requests.get(url)
+        news_data = response.json()
 
-            url = (
-                f'https://newsapi.org/v2/everything?q={query}'
-                f'&from={today_date}&sortBy=publishedAt'
-                f'&apiKey={google_news_api_key}&language=pt'
-            )
-            
-            response = requests.get(url)
-            news_data = response.json()
+        if news_data.get('status') == 'ok':
+            # Verificar quantas notícias já existem para essa ação hoje
+            existing_news_count = Noticia.objects.filter(
+                acao_selecionada=acao,
+                data_publicacao__date=today_date
+            ).count()
 
-            if news_data.get('status') == 'ok':
-                # Verificar quantas notícias já existem para essa ação hoje
-                existing_news_count = Noticia.objects.filter(
-                    acao_selecionada=acao,
-                    data_publicacao__date=today_date
-                ).count()
+            for article in news_data.get('articles', []):
+                # Verificar se o limite de notícias já foi atingido
+                if existing_news_count >= max_daily_news:
+                    break  # Parar de adicionar notícias para esta ação
 
-                for article in news_data.get('articles', []):
-                    # Verificar se o limite de notícias já foi atingido
-                    if existing_news_count >= max_daily_news:
-                        break  # Parar de adicionar notícias para esta ação
+                title = article.get('title', '')
+                if not title:
+                    logger.debug(f"Título não encontrado para o artigo: {article}")
+                    continue  # Pula para o próximo artigo
 
-                    title = article.get('title', '')
-                    if not title:
-                        print(f"Título não encontrado para o artigo: {article}")
+                # Verificar se o título contém o símbolo ou o nome da ação (case-insensitive)
+                title_lower = title.lower()
+                simbolo_lower = acao.simbolo.lower()
+                nome_lower = acao.nome.lower()
+
+                if simbolo_lower in title_lower or nome_lower in title_lower:
+                    published_at = article.get('publishedAt')
+                    if not published_at:
+                        logger.debug(f"Data de publicação não encontrada para o artigo: {article}")
                         continue  # Pula para o próximo artigo
 
-                    # Verificar se o título contém o símbolo ou o nome da ação (case-insensitive)
-                    title_lower = title.lower()
-                    simbolo_lower = acao.simbolo.lower()
-                    nome_lower = acao.nome.lower()
+                    # Converter a data de publicação para o formato DateTimeField do Django
+                    data_publicacao = parse_datetime(published_at)
+                    
+                    # Verificar se a data de publicação é hoje
+                    if data_publicacao.date() == today_date:
+                        # Criar a nova notícia no banco de dados
+                        Noticia.objects.create(
+                            acao_selecionada=acao,
+                            fonte=article.get('source', {}).get('name', 'Fonte desconhecida'),
+                            conteudo=title,
+                            url=article.get('url', ''),
+                            data_publicacao=data_publicacao
+                        )
 
-                    if simbolo_lower in title_lower or nome_lower in title_lower:
-                        published_at = article.get('publishedAt')
-                        if not published_at:
-                            print(f"Data de publicação não encontrada para o artigo: {article}")
-                            continue  # Pula para o próximo artigo
-
-                        # Converter a data de publicação para o formato DateTimeField do Django
-                        data_publicacao = parse_datetime(published_at)
-                        
-                        # Verificar se a data de publicação é hoje
-                        if data_publicacao.date() == today_date:
-                            # Criar a nova notícia no banco de dados
-                            Noticia.objects.create(
-                                acao_selecionada=acao,
-                                fonte=article.get('source', {}).get('name', 'Fonte desconhecida'),
-                                conteudo=title,
-                                url=article.get('url', ''),
-                                data_publicacao=data_publicacao
-                            )
-
-                            # Incrementar o contador de notícias existentes
-                            existing_news_count += 1
-            else:
-                error_message = news_data.get('message', 'Erro desconhecido ao buscar notícias.')
-                print(f"Erro ao buscar notícias para {acao.simbolo}: {error_message}")
+                        # Incrementar o contador de notícias existentes
+                        existing_news_count += 1
+        else:
+            error_message = news_data.get('message', 'Erro desconhecido ao buscar notícias.')
+            logger.debug(f"Erro ao buscar notícias para {acao.simbolo}: {error_message}")
 
 @shared_task
 def send_daily_news_email(*args, **kwargs):
@@ -123,7 +124,7 @@ def send_daily_news_email(*args, **kwargs):
         limite_noticias = cliente.plano.qtdade_noticias if cliente.plano else max_daily_news
         acoes = cliente.tickers.all()
 
-        if not acoes.exists():
+        if not acoes:
             continue
 
         news_content = "<div class='container'>"
@@ -168,7 +169,7 @@ def send_daily_news_email(*args, **kwargs):
             """
             send_mail(
                 subject,
-                '',  # Texto plano vazio
+                '',  
                 'renan.acg7@gmail.com',
                 [cliente.email],
                 fail_silently=False,
@@ -272,7 +273,7 @@ def monitor_news_for_pro_clients():
 
                 # Buscar notícias desde a última verificação (último minuto)
                 # from_time = current_time_brasilia - timedelta(minutes=1)
-                # url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt'
+                # url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt&pageSize={settings.MAX_NEWS_DAILY}'
                
                 # Calcula a data de ontem
                 yesterday = datetime.now() - timedelta(days=1)
@@ -281,8 +282,15 @@ def monitor_news_for_pro_clients():
                 from_time = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
 
                 # Gera a URL com a data de ontem
-                url = f'https://newsapi.org/v2/everything?q={acao.simbolo}&from={from_time.isoformat()}&sortBy=publishedAt&apiKey={google_news_api_key}&language=pt'
-                            
+                url = f'https://newsapi.org/v2/everything?q={acao.simbolo}'
+                f'&from={from_time.isoformat()}'
+                f'&sortBy=publishedAt'
+                f'&apiKey={google_news_api_key}'
+                f'&language=pt'
+                f'&pageSize={settings.MAX_NEWS_DAILY}'
+                f'&domains={",".join(settings.DOMAIN_NEWS)}'
+
+                logger.debug(url)            
                 
                 response = requests.get(url)
                 news_data = response.json()
@@ -311,13 +319,7 @@ def monitor_news_for_pro_clients():
                                     send_immediate_news_email(cliente.id, noticia.id)
 
 @shared_task
-def send_whatsapp_news():
-
-    logger.debug("TORCH CUDA IS AVAILABLE", torch.cuda.is_available())  # Verifica se a GPU está disponível
-    logger.debug("TORCH DEVICE", torch.cuda.current_device())
-    
-    # Definir o horário da última verificação (últimos 10 minutos)
-    intervalo_tempo = timezone.now() - timedelta(minutes=settings.WHATSAPP_NEWS_FETCH_INTERVAL+60)
+def send_whatsapp_news(*args, **kwargs):
 
     # Selecionar clientes com plano Pro
     pro_clients = Cliente.objects.filter(plano__nome_plano="Pro")  # Buscar clientes com plano "Pro"
@@ -328,7 +330,7 @@ def send_whatsapp_news():
         # Verificar se há novas notícias para este cliente
         novas_noticias = Noticia.objects.filter(
             acao_selecionada__in=cliente.tickers.all(),  # Verifica notícias das ações selecionadas pelo cliente
-            data_publicacao__gte=intervalo_tempo  # Notícias publicadas nos últimos 10 minutos
+            data_publicacao__gte=settings.PRO_MONITOR_NEWS_INTERVAL_MINUTES  
         )
 
         # Se houver novas notícias, enviar via WhatsApp
@@ -372,6 +374,7 @@ def send_whatsapp_news():
 
                 except Exception as e:
                     logger.debug(f"Erro ao enviar mensagem para {cliente.nome}: {str(e)}")   
+
 
 def send_immediate_news_email(cliente_id, noticia_id):
     try:
@@ -436,5 +439,14 @@ def fetch_and_send_news_chain():
     chain(
         fetch_news_for_stocks.s(),
         send_daily_news_email.s(),
+    ).apply_async()
+
+
+@shared_task
+def monitor_news_for_pro_clients_chain():
+    
+    chain(
+        monitor_news_for_pro_clients.s(),
+        send_whatsapp_news.s(),
     ).apply_async()
 
