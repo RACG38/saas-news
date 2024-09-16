@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -76,7 +78,7 @@ const MainPage = () => {
           <div className="hero-content">
             <div className="hero-text">
               <h2>Mantenha-se à frente no mercado de ações!</h2>
-              <p>Receba notícias em tempo real das suas ações diretamente no seu email e WhatsApp. Não perca nenhuma oportunidade!</p>
+              <p>Receba um resumo das principais notícias das suas ações em tempo real diretamente no seu email e WhatsApp. Não perca nenhuma oportunidade!</p>
               <button className="cta-button" onClick={scrollToPricing}>Experimente Grátis</button>
             </div>
             <div className="hero-image">
@@ -97,6 +99,7 @@ const MainPage = () => {
             <li><span className="check-icon">✔</span> Alertas personalizados: receba notificações diretamente no seu email ou WhatsApp.</li>
             <li><span className="check-icon">✔</span> Acesso a análises de sentimento: descubra o que o mercado está dizendo sobre suas ações.</li>
             <li><span className="check-icon">✔</span> Planos acessíveis para as diferentes necessidades dos investidores.</li>
+            <li><span className="check-icon">✔</span> Utilizamos Inteligência Artificial para capturar, filtrar as principais notícias das suas ações.</li>
           </ul>
         </div>
       </section>
@@ -162,7 +165,7 @@ const MainPage = () => {
             </thead>
             <tbody>
               <tr>
-                <td>Recebimento de notícias diariamente</td>
+                <td>Recebimento diário de notícias</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
@@ -186,17 +189,17 @@ const MainPage = () => {
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
-                <td>Recebimento de notícias das suas ações em tempo real</td>
+                <td>Recebimento de um resumo com as principais notícias das suas ações em tempo real</td>
                 <td>---</td>
                 <td>---</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td>Análise de sentimento das suas ações</td>
                 <td>---</td>
                 <td>---</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
-              </tr>
+              </tr> */}
               <tr>
                 <td>Quantidade de ações para cadastrar</td>
                 <td>5</td>

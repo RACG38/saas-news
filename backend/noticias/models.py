@@ -32,6 +32,7 @@ class Token(models.Model):
 class AcaoSelecionada(models.Model):    
     simbolo = models.CharField(max_length=10)  
     nome = models.CharField(max_length=255, null=True, blank=True)
+    volume = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return f"{self.simbolo}"

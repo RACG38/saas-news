@@ -607,10 +607,20 @@ class DashboardView(APIView):
             acoes_disponiveis = []
 
             for row in tabela.find_all('tr')[1:]:
+
                 cols = row.find_all('td')
                 simbolo = cols[0].text.strip()
                 nome = cols[1].text.strip()
-                acoes_disponiveis.append({'simbolo': simbolo, 'nome': nome})
+                volume = cols[2].text.strip()
+
+                # Remover pontos e converter o volume para um número (float)
+                volume = volume.replace('.', '').replace(',', '.')
+                try:
+                    volume = float(volume)  # Conversão para float
+                except ValueError:
+                    volume = 0  # Caso haja erro na conversão, define como 0
+
+                acoes_disponiveis.append({'simbolo': simbolo, 'nome': nome, 'volume': volume})
 
         except requests.RequestException as e:
             return Response({"error": f"Erro ao buscar dados de ações: {str(e)}"}, status=400)

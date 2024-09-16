@@ -16,6 +16,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
+    "recharts": "^2.12.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -25,11 +26,10 @@
     "eject": "react-scripts eject",
     "backend": "cd ../backend && python manage.py runserver",
     "open-admin": "open-cli http://127.0.0.1:8000/admin/",
-    "celery-worker": "cd ../backend && celery -A saasnews worker --loglevel=DEBUG",
-    "celery-beat": "cd ../backend && celery -A saasnews beat -l DEBUG",
+    "celery-worker": "cd ../backend && celery -A saasnews worker --loglevel=CRITICAL --concurrency=2 --prefetch-multiplier=1 --max-tasks-per-child=10",
+    "celery-beat": "cd ../backend && celery -A saasnews beat -l CRITICAL",
     "dev": "concurrently \"npm start\" \"npm run backend\" \"npm run open-admin\" \"npm run celery-worker\" \"npm run celery-beat\""
   },
-
   "eslintConfig": {
     "extends": [
       "react-app",

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícias Diárias</title>
+    <style>
+        {{ css_content|safe }}  
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% for acao in acoes %}
+        <div class="acao-section">
+            <div class="news-cards">
+                {% for noticia in acao.noticias %}
+                <div class="news-card">
+                    <div class="company-box">{{ acao.nome }}</div>
+                    <strong>Fonte:</strong> {{ noticia.fonte }}<br>
+                    <strong>Data de Publicação:</strong> {{ noticia.data_publicacao }}<br>
+                    <p>{{ noticia.conteudo }}</p>
+                    <a href="{{ noticia.url }}" target="_blank">Leia mais</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

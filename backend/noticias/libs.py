@@ -1,4 +1,5 @@
 import datetime
+import gc
 import json
 import logging
 import os
@@ -35,6 +36,7 @@ from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_decode
 from datetime import datetime, timedelta
 from lxml import html
+from summa import summarizer
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated

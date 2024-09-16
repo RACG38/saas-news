@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-vars */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { faUser, faCogs } from '@fortawesome/free-solid-svg-icons';
 import { faCommentDots } from '@fortawesome/free-solid-svg-icons';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Dashboard.css';
 
 const getStockImagePath = async (symbol) => {
@@ -30,6 +33,32 @@ const getStockImagePath = async (symbol) => {
     }
 };
 
+const getStarIcons = (volume) => {
+    if (volume > 10000000) {
+        return (
+            <div title="3 estrelas: ações com uma quantidade grande de notícias diárias">
+                <FontAwesomeIcon icon={faStar} className="star-icon" />
+                <FontAwesomeIcon icon={faStar} className="star-icon" />
+                <FontAwesomeIcon icon={faStar} className="star-icon" />
+            </div>
+        );
+    } else if (volume >= 1000000 && volume <= 10000000) {
+        return (
+            <div title="2 estrelas: ações com uma quantidade pequena de notícias diárias">
+                <FontAwesomeIcon icon={faStar} className="star-icon" />
+                <FontAwesomeIcon icon={faStar} className="star-icon" />
+            </div>
+        );
+    } else {
+        return (
+            <div title="1 estrela: ações com quase nenhuma notícia diária">
+                <FontAwesomeIcon icon={faStar} className="star-icon" />
+            </div>
+        );
+    }
+};
+
+
 const Dashboard = () => {
     const [userData, setUserData] = useState(null);
     const [selectedStocks, setSelectedStocks] = useState([]);
@@ -41,6 +70,7 @@ const Dashboard = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showLimitModal, setShowLimitModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false); // Novo estado para o modal de cancelamento
+    const [hoveredStock, setHoveredStock] = useState(null); // Estado para armazenar a ação que está com o gráfico sendo exibido
     const navigate = useNavigate();    
 
     useEffect(() => {
@@ -331,7 +361,7 @@ const Dashboard = () => {
                                     <div 
                                         key={acao.simbolo} 
                                         className={`stock-card ${selectedStocks.includes(acao.simbolo) ? 'selected' : ''}`}
-                                        onClick={() => handleStockSelection(acao.simbolo)}
+                                        onClick={() => handleStockSelection(acao.simbolo)}                                        
                                     >
                                         <div className="image-container">
                                             <img 
@@ -343,6 +373,10 @@ const Dashboard = () => {
                                         <div className="symbol-container">
                                             <p className="stock-symbol">{acao.simbolo}</p>
                                         </div>
+                                        <div className="volume-stars">
+                                            {getStarIcons(acao.volume)}
+                                        </div>
+                                        
                                     </div>
                                 ))
                             ) : <p>Nenhuma ação disponível.</p>}
