@@ -13,6 +13,8 @@ google_news_api_key = settings.GOOGLE_NEWS_API_KEY
 max_daily_news = settings.MAX_NEWS_DAILY
 start_fetch_news = settings.START_FETCH_NEWS
 end_fetch_news = settings.END_FETCH_NEWS
+max_twilio_characters = settings.MAX_CHARACTERS
+
 
 @shared_task
 def delete_unassociated_stocks():
@@ -25,7 +27,7 @@ def delete_unassociated_stocks():
     gc.collect()
 
 @shared_task
-def delete_unassociated_tokens():
+def delete_unassociated_tokens(*args, **kwargs):
 
     # Consulta para encontrar ações sem clientes
     tokens_sem_cliente = Token.objects.filter(cliente__isnull=True)
@@ -35,7 +37,7 @@ def delete_unassociated_tokens():
     gc.collect()
 
 @shared_task
-def delete_previous_day_news():
+def delete_previous_day_news(*args, **kwargs):
     # Obtém a data de ontem
     yesterday = datetime.today().date() - timedelta(days=1)
     # Filtra as notícias que têm data de publicação do dia anterior e as exclui
@@ -43,55 +45,46 @@ def delete_previous_day_news():
 
     gc.collect()
 
-@shared_task
+@shared_task(rate_limit='10/m')
 def fetch_news_for_stocks():
-    
+
     # Definir o fuso horário de Brasília (UTC-3)
     brasilia_tz = pytz.timezone('America/Sao_Paulo')
-    
+
     # Hora atual no fuso horário de Brasília
     current_time_brasilia = timezone.now().astimezone(brasilia_tz)
-    current_hour_brasilia = current_time_brasilia.hour  # Verifica a hora atual no fuso horário de Brasília  
+    current_hour_brasilia = current_time_brasilia.hour  # Verifica a hora atual no fuso horário de Brasília
 
     if start_fetch_news <= current_hour_brasilia < end_fetch_news:
 
         acoes = AcaoSelecionada.objects.all()
-        today_date = datetime.today().date() 
-        yesterday = datetime.now() - timedelta(days=3)
+        three_days_ago = datetime.now() - timedelta(days=5)
 
-        # Formata a data de ontem para o formato ISO 8601 (necessário para a URL)
-        from_time = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)    
+        # Formata a data de três dias atrás para o formato ISO 8601 (necessário para a URL)
+        from_time = three_days_ago.replace(hour=0, minute=0, second=0, microsecond=0)
 
-        for acao in acoes:        
-            # Dicionário para acumular o conteúdo das notícias por ação
-            all_descriptions = []
-
-            # Gera a URL com a data de ontem
+        for acao in acoes:
+            # Gera a URL com a data de três dias atrás
             url = (f'https://newsapi.org/v2/everything?q={acao.simbolo}'
-            f'&from={from_time.isoformat()}'
-            f'&sortBy=publishedAt'
-            f'&apiKey={google_news_api_key}'
-            f'&language=pt'
-            f'&pageSize={settings.MAX_NEWS_DAILY}'
-            )
+                   f'&from={from_time.isoformat()}'
+                   f'&sortBy=publishedAt'
+                   f'&apiKey={google_news_api_key}'
+                   f'&language=pt'
+                   f'&pageSize={settings.MAX_NEWS_DAILY}'
+                   )
 
             with requests.get(url) as response:
                 news_data = response.json()
 
-            if news_data.get('status') == 'ok':                
-                # Verificar quantas notícias já existem para essa ação hoje
-                existing_news_count = Noticia.objects.filter(
-                    acao_selecionada=acao,
-                    data_publicacao__date=from_time
-                ).count()                 
+            if news_data.get('status') == 'ok':
 
-                for article in news_data.get('articles', []):                     
-                    # Verificar se o limite de notícias já foi atingido
-                    if existing_news_count >= max_daily_news: break
+                # Para cada artigo, salvar o conteúdo completo ou descrição no banco de dados
+                for article in news_data.get('articles', []):
+                    description = article.get('description', '')
+                    content = article.get('content', '')  # Tentar pegar o conteúdo completo da notícia
 
-                    description = article.get('description', '')               
-
-                    if not description: continue
+                    if not description and not content:
+                        continue
 
                     # Verificar se o conteúdo contém o símbolo ou o nome da ação (case-insensitive)
                     description_lower = description.lower()
@@ -99,53 +92,23 @@ def fetch_news_for_stocks():
                     nome_lower = acao.nome.lower()
 
                     if simbolo_lower in description_lower or nome_lower in description_lower:
-                        published_at = article.get('publishedAt')
+                        full_text = content if content else description
 
-                        if not published_at: continue
-
-                        # Acumular as descrições das notícias para a ação
-                        all_descriptions.append(description)
-
-                        # Converter a data de publicação para o formato DateTimeField do Django
-                        data_publicacao = parse_datetime(published_at)      
-
-                        # Verificar se a notícia já foi armazenada para evitar duplicatas
-                        if not Noticia.objects.filter(acao_selecionada=acao, url=article['url']).exists():                  
-                            # Criar a nova notícia no banco de dados
+                        # Verificar se o texto já existe no banco de dados
+                        if not Noticia.objects.filter(acao_selecionada=acao, conteudo=full_text).exists():
+                            # Salvar o conteúdo completo da notícia
                             Noticia.objects.create(
                                 acao_selecionada=acao,
-                                fonte=article.get('source', {}).get('name', 'Fonte desconhecida'),
-                                conteudo=description,
-                                url=article.get('url', ''),
-                                data_publicacao=data_publicacao
-                            )                                
+                                conteudo=full_text
+                            )
+                        else:
+                            logger.debug(f"Notícia já existente para {acao.simbolo}")
 
-                            # Incrementar o contador de notícias existentes
-                            existing_news_count += 1
-            
-            # Gerar resumo se houver notícias
-            if all_descriptions:
-                full_text = ' '.join(all_descriptions)
-                try:
-                    resumo = summarizer.summarize(full_text, word_count=100)  # Ajustar o número de palavras conforme necessário
-                except ValueError:
-                    resumo = full_text[:500]  # Caso o texto seja muito curto para sumarização, usar os primeiros 500 caracteres
-
-                # Salvar o resumo para a ação (caso deseje salvar o resumo no modelo de notícia ou em um campo específico)
-                Noticia.objects.create(
-                    acao_selecionada=acao,
-                    resumo=resumo,
-                    data_geracao=today_date
-                )
-                
             else:
-                logger.debug(f"Nenhuma notícia relevante encontrada para {acao.simbolo}")
+                logger.debug(f"Erro ao buscar notícias para {acao.simbolo}: {news_data.get('message', 'Erro desconhecido ao buscar notícias.')}")
 
-        else:
-            error_message = news_data.get('message', 'Erro desconhecido ao buscar notícias.')
-            logger.debug(f"Erro ao buscar notícias para {acao.simbolo}: {error_message}")
 
-@shared_task
+@shared_task(rate_limit='5/m')
 def send_daily_news_email(*args, **kwargs):
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -175,27 +138,38 @@ def send_daily_news_email(*args, **kwargs):
         if not acoes:
             continue
 
+        # Variável para indicar se há pelo menos uma notícia válida
+        has_valid_news = False
+
         # Carregar todas as notícias das ações do cliente
         acoes_com_noticias = []
         for acao in acoes:
             noticias = Noticia.objects.filter(acao_selecionada=acao).order_by('-id')[:limite_noticias]
             
-            # Verifica se há notícias
-            if noticias:
-                acoes_com_noticias.append({
-                    'nome': acao.nome,
-                    'simbolo': acao.simbolo,
-                    'noticias': noticias
-                })
-            else:
-                # Adiciona uma mensagem indicando que não há notícias
-                acoes_com_noticias.append({
-                    'nome': acao.nome,
-                    'simbolo': acao.simbolo,
-                    'noticias': None  # Marca que não há notícias
-                })
+            # Verifica se há notícias com conteúdo válido
+            noticias_validas = [noticia for noticia in noticias if noticia.conteudo and noticia.conteudo.strip()]
 
-        if acoes_com_noticias:
+            if noticias_validas:
+                # Gerar um resumo dos principais assuntos das notícias
+                resumo = "\n".join([summarizer.summarize(noticia.conteudo, ratio=0.2) for noticia in noticias_validas])
+
+                # Separar o conteúdo das notícias em uma lista de tópicos
+                topicos = [noticia.conteudo.split('\n') for noticia in noticias_validas]
+                
+                # Links das notícias
+                links_noticias = "\n".join([noticia.url for noticia in noticias_validas if noticia.url])
+
+                acoes_com_noticias.append({
+                    'nome': acao.nome,
+                    'simbolo': acao.simbolo,
+                    'resumo': resumo,
+                    'topicos': topicos,  # Passar os tópicos pré-processados
+                    'url': links_noticias
+                })
+                has_valid_news = True  # Marca que há pelo menos uma notícia válida
+
+        # Se houver pelo menos uma notícia válida, enviar o e-mail
+        if has_valid_news:
             # Renderizar o template HTML e passar o CSS como contexto
             full_email_content = render_to_string('noticias/news_email.html', {
                 'css_content': css_content,  # Passa o CSS dinamicamente
@@ -212,8 +186,11 @@ def send_daily_news_email(*args, **kwargs):
                 fail_silently=False,
                 html_message=full_email_content
             )
+        else:
+            logger.debug(f"Sem notícias válidas para enviar para o cliente {cliente.nome}")
 
-@shared_task
+
+@shared_task(rate_limit='5/m') 
 def send_whatsapp_news(*args, **kwargs):  
 
     # Selecionar clientes com plano Pro
@@ -230,35 +207,52 @@ def send_whatsapp_news(*args, **kwargs):
         # Se houver novas notícias, enviar via WhatsApp
         if novas_noticias:
 
+            # Inicializar uma variável para armazenar todas as notícias
+            mensagem_completa = f"📰 *Resumo de notícias sobre as ações do cliente {cliente.nome}:*\n\n"
+
             for noticia in novas_noticias:
 
-                # Inicializar o pipeline de sumarização usando a GPU (se disponível)
-                # summarizer = pipeline("summarization", model="facebook/bart-large-cnn", device=0 if torch.cuda.is_available() else -1)
-                summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6", device=0 if torch.cuda.is_available() else -1)
+                # Verificar se a notícia tem conteúdo antes de prosseguir
+                if noticia.conteudo and noticia.conteudo.strip():  # Garantir que não esteja vazio
 
-                
+                    # Inicializar o pipeline de sumarização usando a GPU (se disponível)
+                    summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6", device=0 if torch.cuda.is_available() else -1)
+
+                    try:
+                        resumo = summarizer(noticia.conteudo, max_length=100, min_length=30, do_sample=False)[0]['summary_text']
+                    except Exception as e:
+                        resumo = noticia.conteudo  # Caso haja um erro ou o conteúdo seja pequeno, usar o conteúdo original
+
+                    # Verificar se a data de publicação não é None
+                    if noticia.data_publicacao:
+                        data_publicacao_formatada = noticia.data_publicacao.strftime('%d/%m/%Y %H:%M')
+                    else:
+                        data_publicacao_formatada = "Data não disponível"
+
+                    # Montar a nova parte da mensagem
+                    nova_mensagem = (
+                        f"*🔹 Ação:* {noticia.acao_selecionada.nome} ({noticia.acao_selecionada.simbolo})\n"
+                        f"*🔹 Fonte:* {noticia.fonte}\n"
+                        f"*🔹 Data de publicação:* {data_publicacao_formatada}\n"
+                        f"*🔹 Resumo:* {resumo}\n"
+                        f"*🔹 Leia mais no link abaixo:*\n{noticia.url if noticia.url else 'Nenhum link disponível'}\n\n"
+                    )
+
+                    # Verificar se a nova mensagem cabe no limite de caracteres
+                    if len(mensagem_completa) + len(nova_mensagem) <= max_twilio_characters:
+                        mensagem_completa += nova_mensagem
+                    else:
+                        logger.debug(f"A notícia sobre {noticia.acao_selecionada.nome} foi omitida devido ao limite de caracteres.")
+
+            # Enviar todas as notícias em uma única mensagem
+            if mensagem_completa.strip():  # Verificar se há conteúdo para enviar
                 try:
-                    resumo = summarizer(noticia.conteudo, max_length=100, min_length=30, do_sample=False)[0]['summary_text']
-                except Exception as e:
-                    resumo = noticia.conteudo  # Caso haja um erro ou o conteúdo seja pequeno, usar o conteúdo original
-
-                mensagem = (
-                    f"📰 *Nova notícia sobre a ação da empresa {noticia.acao_selecionada.nome} ({noticia.acao_selecionada.simbolo}):*\n\n"
-                    f"*🔹 Fonte:* {noticia.fonte}\n\n"
-                    f"*🔹 Data de publicação:* {noticia.data_publicacao.strftime('%d/%m/%Y %H:%M')}\n\n"
-                    f"*🔹 Resumo da notícia:*\n"
-                    f"{resumo}\n\n"
-                    f"*🔹 Leia mais no link abaixo:*\n{noticia.url if noticia.url else 'Nenhum link disponível'}"
-                )                
-
-                try:
-
                     message = client_twilio.messages.create(
-                        body=mensagem,
-                        from_='whatsapp:' + settings.TWILIO_PHONE_NUMBER,                                                         
+                        body=mensagem_completa,
+                        from_='whatsapp:' + settings.TWILIO_PHONE_NUMBER,
                         to='whatsapp:' + f'+55{cliente.whatsapp}'
-                    )                    
-                    
+                    )
+
                     if message.status in ['queued', 'sending', 'sent']:
                         logger.debug(f"Mensagem enviada com sucesso para {cliente.nome}: {message.sid}")
                     elif message.status == 'delivered':
@@ -267,8 +261,9 @@ def send_whatsapp_news(*args, **kwargs):
                         logger.debug(f"Falha ao enviar mensagem para {cliente.nome}: {message.status}")
 
                 except Exception as e:
-                    logger.debug(f"Erro ao enviar mensagem para {cliente.nome}: {str(e)}") 
-
+                    logger.debug(f"Erro ao enviar mensagem para {cliente.nome}: {str(e)}")
+                    
+    torch.cuda.empty_cache()
     gc.collect()
 
 @shared_task
@@ -347,7 +342,7 @@ def check_and_save_dividend_news():
 # Tasks síncronas
 @shared_task
 def fetch_and_send_news_chain():    
-
+    
     chain(
         fetch_news_for_stocks.s(),
         send_daily_news_email.s(),

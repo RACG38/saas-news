@@ -20,13 +20,13 @@ MAX_NEWS_DAILY = 5 # Quantidade máxima de notícias diárias por ação
 START_FETCH_NEWS = 0 # Inicio do pregão
 END_FETCH_NEWS =  24 # Horário após o fim do pregão
 
-FETCH_AND_SEND_DAILY_NEWS_INTERVAL_MINUTE = 60
+MAX_CHARACTERS = 1600
+
+FETCH_AND_SEND_DAILY_NEWS_INTERVAL_MINUTE = 2
 CHECK_DIVIDENDS_DAILY_INTERVAL_HOUR = 3
 CHECK_DIVIDENDS_DAILY_INTERVAL_MINUTE = 40
 DELETE_PREVIOUS_DATA_HOUR = 0
 DELETE_PREVIOUS_DATA_MINUTE = 0
-
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

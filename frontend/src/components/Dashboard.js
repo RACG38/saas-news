@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
@@ -63,18 +61,18 @@ const Dashboard = () => {
     const [userData, setUserData] = useState(null);
     const [selectedStocks, setSelectedStocks] = useState([]);
     const [filterLetter, setFilterLetter] = useState('');
-    const [error, setError] = useState(''); 
+    const [setError] = useState(''); 
     const [showMyStocks, setShowMyStocks] = useState(false); 
     const [stocksWithImages, setStocksWithImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showLimitModal, setShowLimitModal] = useState(false);
-    const [showCancelModal, setShowCancelModal] = useState(false); // Novo estado para o modal de cancelamento
-    const [hoveredStock, setHoveredStock] = useState(null); // Estado para armazenar a ação que está com o gráfico sendo exibido
+    const [showCancelModal, setShowCancelModal] = useState(false); // Novo estado para o modal de cancelamento    
     const navigate = useNavigate();    
 
     useEffect(() => {
         fetchImages();
+        // eslint-disable-next-line
     }, [navigate]);
 
     const handleFeedbackClick = () => {
@@ -100,7 +98,7 @@ const Dashboard = () => {
         return planMap[planName] || null;  // Retorna o id ou null se o nome não for encontrado
       };
 
-    const fetchImages = async () => {
+      const fetchImages = useCallback(async () => {
         const userId = localStorage.getItem('userId');
         const response = await fetch(`http://localhost:8000/auth/dashboard/?cliente_id=${userId}`);
         const data = await response.json();
@@ -122,7 +120,7 @@ const Dashboard = () => {
 
             setLoading(false);
         }
-    };
+    }, []);
 
     const removeDuplicates = (stocks) => {
         const seen = new Set();

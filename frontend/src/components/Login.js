@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation  } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -9,15 +9,31 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
-    const [loading, setLoading] = useState(false); // Estado para o carregamento
+    const [loading, setLoading] = useState(false);
+    const [typedText, setTypedText] = useState(''); // Estado para o efeito de digitação
+    const [textIndex, setTextIndex] = useState(0); // Estado para controlar o índice da letra a ser exibida
+
     const navigate = useNavigate();
     const location = useLocation();
 
     const { selectedPlanName } = location.state || {};
 
+    const fullText = "Fique por dentro de cada acontecimento das suas ações, em tempo real!";
+
+    useEffect(() => {
+        if (textIndex < fullText.length) {
+            const timeout = setTimeout(() => {
+                setTypedText(typedText + fullText[textIndex]);
+                setTextIndex(textIndex + 1);
+            }, 100); // Intervalo de 100ms para exibir cada letra
+
+            return () => clearTimeout(timeout); // Limpar timeout a cada renderização
+        }
+    }, [textIndex, typedText, fullText]);
+
     const handleLogin = async (e) => {
         e.preventDefault();
-        setLoading(true); // Ativa o carregamento
+        setLoading(true);
         
         try {
             const response = await fetch('http://localhost:8000/auth/login/', {
@@ -44,16 +60,15 @@ const Login = () => {
 
             localStorage.setItem('userId', data.cliente_id);
 
-            // Simula um atraso para mostrar a barra de carregamento
             setTimeout(() => {
-                setLoading(false); // Desativa o carregamento
+                setLoading(false);
                 navigate('/dashboard');
-            }, 1000); // 1 segundo de atraso (ajuste conforme necessário)
+            }, 1000);
 
         } catch (error) {
             setMessage(error.message);
             setIsError(true);
-            setLoading(false); // Desativa o carregamento em caso de erro
+            setLoading(false);
         }
     };
 
@@ -62,51 +77,54 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            <h2>Olá! Seja Bem-vindo (a)!</h2>
-            <p>Sincronize seus ativos na plataforma e acompanhe as principais notícias da sua carteira diariamente</p>
-            <form className="login-form" onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit" disabled={loading}>ENTRAR</button>
-                <a href="#" onClick={handleForgotPassword}>Esqueceu sua senha?</a>
-            </form>
-            <div className="social-login">
-                {/* <button className="facebook-login">Continue com Facebook</button> */}
-                {/* <button className="google-login">Continue com Google</button> */}
+        <div className="login-page">
+            {/* Parte esquerda com o texto animado */}
+            <div className="login-left">
+                <p className="animated-text">{typedText}</p>
             </div>
-            {/* <p>Não tem uma conta? <Link to="/register">Cadastre-se</Link></p> */}
-            {loading && (
-                <div className="loading-bar">
-                    <div className="loading-bar-progress"></div>
-                </div>
-            )}
-            {message && (
-                <div
-                    style={{
-                        color: isError ? 'red' : '#ff6f00',
-                        border: `1px solid ${isError ? 'red' : '#ff6f00'}`,
-                        padding: '10px',
-                        marginTop: '10px',
-                        borderRadius: '5px',
-                        textAlign: 'center',
-                    }}
-                >
-                    {message}
-                </div>
-            )}
+
+            {/* Parte direita com o formulário de login */}
+            <div className="login-container">
+                <h2>Olá! Seja Bem-vindo (a)!</h2>
+                <p>Sincronize seus ativos na plataforma e acompanhe as principais notícias da sua carteira diariamente</p>
+                <form className="login-form" onSubmit={handleLogin}>
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Senha"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <button type="submit" disabled={loading}>ENTRAR</button>
+                    <a href="#" onClick={handleForgotPassword}>Esqueceu sua senha?</a>
+                </form>
+                {loading && (
+                    <div className="loading-bar">
+                        <div className="loading-bar-progress"></div>
+                    </div>
+                )}
+                {message && (
+                    <div
+                        style={{
+                            color: isError ? 'red' : '#ff6f00',
+                            border: `1px solid ${isError ? 'red' : '#ff6f00'}`,
+                            padding: '10px',
+                            marginTop: '10px',
+                            borderRadius: '5px',
+                            textAlign: 'center',
+                        }}
+                    >
+                        {message}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

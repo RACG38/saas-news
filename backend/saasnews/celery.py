@@ -16,6 +16,12 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.timezone = 'America/Sao_Paulo'
 app.conf.enable_utc = False
 
+# Definir a reconexão ao broker no startup
+app.conf.broker_connection_retry_on_startup = True 
+app.conf.broker_connection_max_retries = None  # Tentar indefinidamente
+app.conf.broker_connection_retry_interval = 10  # Intervalo de 10 segundos entre as tentativas
+
+
 # Autodiscover tasks em todos os apps instalados
 app.autodiscover_tasks(['noticias'])
 

@@ -1,17 +1,50 @@
 @import 'Global.css';
 
-/* Estilos específicos para a caixa de login */
+/* Layout geral da página de login */
+.login-page {
+    display: flex;
+    height: 100vh;    
+}
+
+/* Parte esquerda com o texto animado */
+.login-left {
+    flex: 1; /* Ocupa metade da tela */
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    padding: 20px;
+}
+
+.animated-text {
+    font-size: 36px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #ff6f00, #ff9f00, #ff6f00);
+    background-size: 300%;
+    background-clip: text; /* Adicione essa linha para compatibilidade */
+    -webkit-background-clip: text; /* Versão com prefixo para navegadores baseados no WebKit */
+    -webkit-text-fill-color: transparent; /* Isso é necessário para o efeito de gradiente funcionar */
+}
+
+@keyframes gradient-shift {
+    0% {
+        background-position: 0%;
+    }
+    100% {
+        background-position: 100%;
+    }
+}
+
+/* Parte direita com o formulário de login */
 .login-container {
-    max-width: 500px;          /* Define a largura máxima da caixa de login */
-    padding: 40px;             /* Espaçamento interno */
-    border: 1px solid #ff8f00;    /* Borda ao redor da caixa */
-    border-radius: 8px;        /* Arredondamento */
-    background-color: #f0f0f0;    /* Fundo da caixa */
-    text-align: center;        /* Alinha o texto dentro da caixa */
-    margin-right: 30px;           /* Certifica que não haja margem à direita */
-    margin-left: auto;         /* Alinha automaticamente à direita */
-    margin-top: 300px;
-    box-shadow: 0px 4px 8px #ff8f00; 
+    flex: 1; /* Ocupa metade da tela */
+    max-width: 500px;
+    padding: 40px;
+    border: 1px solid #ff8f00;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    text-align: center;
+    margin: auto;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .login-container h2 {
@@ -25,48 +58,26 @@
 }
 
 .login-form input {
-    width: 95%;               /* Aumenta a largura dos inputs */
-    padding: 12px;            /* Aumenta o padding dos inputs */
+    width: 95%;
+    padding: 12px;
     margin: 10px 0;
     border: 2px solid #ff8f00;
     border-radius: 4px;
 }
 
 .login-form button {
-    width: 100%;              /* Botão ocupa toda a largura disponível */
-    padding: 14px;            /* Aumenta o padding do botão */
+    width: 100%;
+    padding: 14px;
     margin-top: 12px;
     background-color: #333;
     color: white;
     border: none;
-    border-radius: 25px;      /* Arredonda o botão */
+    border-radius: 25px;
     cursor: pointer;
 }
 
 .login-form button:hover {
     background-color: #555;
-}
-
-.social-login button {
-    width: 100%;              /* Botões de login social ocupam toda a largura */
-    padding: 12px;            /* Aumenta o padding dos botões */
-    margin: 8px 0;
-    border: none;
-    border-radius: 25px;      /* Arredonda os botões sociais */
-    color: white;
-    cursor: pointer;
-}
-
-.facebook-login {
-    background-color: #3b5998;
-}
-
-.google-login {
-    background-color: #db4437;
-}
-
-.social-login button:hover {
-    opacity: 0.9;
 }
 
 .login-container a {

@@ -70,9 +70,9 @@
 }
 
 .token-verification-form button:enabled {
-    background-color: #007bff;
+    background-color: #ff8f00;
 }
 
 .token-verification-form button:hover:enabled {
-    background-color: #0056b3;
+    background-color: #a07845;
 }

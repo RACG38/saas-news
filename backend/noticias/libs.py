@@ -12,10 +12,9 @@ import string
 import time
 import torch
 from bs4 import BeautifulSoup
-from celery import Celery, chain
-from celery import chain
-from celery import shared_task
+from celery import Celery, chain, shared_task
 from celery.schedules import crontab
+from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
