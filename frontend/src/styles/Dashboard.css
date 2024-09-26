@@ -73,8 +73,7 @@ body {
     width: 100%;
     padding: 15px;
     margin-top: 15px;
-    font-size: 1.1rem;
-    background-color: #4caf50;
+    font-size: 1.1rem;    
     color: white;
     border: none;
     border-radius: 5px;
@@ -82,6 +81,60 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     text-shadow: #120c2b;
+}
+
+.sidebar-button.save {
+    margin-top: 50px;
+    background-image: linear-gradient(to right, #237026, #81c784); /* Degradê do verde escuro para verde claro */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-shadow: #120c2b;
+}
+
+.sidebar-button.save:hover {
+    background-image: linear-gradient(to right, #45a049, #66bb6a); /* Degradê mais escuro no hover */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-button.clear-selection {
+    background-image: linear-gradient(to right, #f44336, #e57373); /* Degradê do vermelho escuro para vermelho claro */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar-button.clear-selection:hover {
+    background-image: linear-gradient(to right, #d32f2f, #ef5350); /* Degradê mais escuro no hover */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-button.cancel-subscription {
+    background-image: linear-gradient(to right, #8256d3, #bb86fc); /* Degradê do roxo escuro para roxo claro */
+    color: white;
+    padding: 15px;
+    margin-top: 120px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%;
+}
+
+.sidebar-button.cancel-subscription:hover {
+    background-image: linear-gradient(to right, #5418e0, #7e57c2); /* Degradê mais escuro no hover */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 h3.custom-heading {
@@ -99,28 +152,6 @@ h3.custom-heading {
 .large-section {
     margin-bottom: 50px; /* Espaçamento maior entre essa seção e a próxima */
 }
-
-.sidebar-button:hover {
-    background-color: #3a9a48;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-
-/* Outros estilos que permanecem os mesmos */
-.sidebar-button.save:hover {
-    background-color: #45a049;
-}
-
-.sidebar-button.clear-selection {
-    background-color: #f44336;
-}
-
-.sidebar-button.clear-selection:hover {
-    background-color: #d32f2f;
-}
-
-
 
 .stocks-section {
     margin-top: 20px;
@@ -226,41 +257,6 @@ h3.custom-heading {
 }
 
 
-.sidebar-button {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    /* Aumenta o tamanho dos botões */
-    margin-top: 15px;
-    /* Aumenta o espaçamento superior */
-    font-size: 1.1rem;
-    /* Aumenta o tamanho do texto dos botões */
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    text-shadow: #120c2b;
-}
-
-.sidebar-button.save {
-    margin-top: 50px;
-    /* Aumenta a distância do botão Salvar em relação ao botão Limpar */
-}
-
-.sidebar-button.save:hover {
-    background-color: #45a049;
-}
-
-.sidebar-button.clear-selection {
-    background-color: #f44336;
-}
-
-.sidebar-button.clear-selection:hover {
-    background-color: #d32f2f;
-}
 
 .letter-filter {
     position: sticky;
@@ -438,25 +434,6 @@ h3.custom-heading {
     color: #f0f0f0;
     border-color: #f0f0f0; /* Altera a cor da borda ao passar o mouse */
     text-decoration: underline;
-}
-
-.sidebar-button.cancel-subscription {
-    background-color: #976ee4; /* Cor de fundo do botão (tom de vermelho tomate) */
-    color: white;
-    padding: 15px;
-    margin-top: 120px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    width: 100%;
-}
-
-.sidebar-button.cancel-subscription:hover {
-    background-color: #5418e0; /* Cor de fundo ao passar o mouse (tom de vermelho mais escuro) */
-    transform: translateY(-2px);
 }
 
 /* Estilo para o ícone de feedback */

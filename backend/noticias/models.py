@@ -47,6 +47,8 @@ class Noticia(models.Model):
     conteudo = models.TextField(null=True, blank=True)
     url = models.URLField(null=True, blank=True) 
     data_publicacao = models.DateTimeField(null=True, blank=True)     
+    data_envio_email = models.DateTimeField(null=True, blank=True)  
+    data_envio_whatsapp = models.DateTimeField(null=True, blank=True) 
 
     def __str__(self):
         return f"Notícia sobre {self.acao_selecionada.simbolo}"

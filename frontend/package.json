@@ -26,9 +26,10 @@
     "eject": "react-scripts eject",
     "backend": "cd ../backend && python manage.py runserver",
     "open-admin": "open-cli http://127.0.0.1:8000/admin/",
+    "redis-server": "pgrep redis-server || redis-server",
     "celery-worker": "cd ../backend && celery -A saasnews worker --loglevel=INFO --concurrency=2 --prefetch-multiplier=1 --max-tasks-per-child=10",
     "celery-beat": "cd ../backend && celery -A saasnews beat -l INFO",
-    "dev": "concurrently \"npm start\" \"npm run backend\" \"npm run open-admin\" \"npm run celery-worker\" \"npm run celery-beat\""
+    "dev": "concurrently \"npm start\" \"npm run redis-server\" \"npm run backend\" \"npm run open-admin\" \"npm run celery-worker\" \"npm run celery-beat\""
   },
   "eslintConfig": {
     "extends": [

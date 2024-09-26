@@ -140,7 +140,7 @@ const Dashboard = () => {
         } else {
             if (selectedStocks.length < maxAtivos) {
                 setSelectedStocks(prevSelectedStocks => [...prevSelectedStocks, simbolo]);
-                setError(''); 
+                // setError(''); 
             } else {
                 setShowLimitModal(true);
             }
@@ -187,7 +187,7 @@ const Dashboard = () => {
 
     const handleClearSelection = () => {
         setSelectedStocks([]);
-        setError(''); 
+        // setError(''); 
     };
 
     const handleShowMyStocks = () => {

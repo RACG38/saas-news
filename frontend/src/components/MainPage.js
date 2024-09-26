@@ -177,23 +177,29 @@ const MainPage = () => {
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
+                <td>Aviso de pagamento de dividendos por e-mail</td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+              </tr>
+              <tr>
+                <td>Recebimento de um resumo com as principais notícias das suas ações em tempo real por e-mail</td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
+              </tr>
+              <tr>
                 <td>Notícias enviadas por WhatsApp</td>
                 <td>---</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
-                <td>Aviso de pagamento de dividendos por e-mail</td>
-                <td>---</td>
-                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
-                <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
-              </tr>
-              <tr>
-                <td>Recebimento de um resumo com as principais notícias das suas ações em tempo real</td>
+                <td>Recebimento de um resumo com as principais notícias das suas ações em tempo real pelo whatsapp</td>
                 <td>---</td>
                 <td>---</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
-              </tr>
+              </tr>              
               {/* <tr>
                 <td>Análise de sentimento das suas ações</td>
                 <td>---</td>
