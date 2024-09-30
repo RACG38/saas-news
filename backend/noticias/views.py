@@ -1,6 +1,32 @@
-from .libs import *
-from django.conf import settings
+# Bibliotecas Padrão
 import logging
+import datetime
+import random
+import string
+import json
+from datetime import timedelta
+
+# Bibliotecas de Terceiros
+import stripe
+import requests
+from bs4 import BeautifulSoup
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
+
+# Imports Internos (do Projeto)
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core.mail import send_mail
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from .models import Cliente, Token, Plano, Endereco, AcaoSelecionada
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -39,7 +65,6 @@ def enviar_email_free(cliente, change_plan_flag):
 
     if change_plan_flag == True:
 
-        # email_template = 'email/change_plan.html'
         subject = f'{cliente.nome}, a mudança do seu plano foi concluída'
 
     else:
@@ -470,7 +495,7 @@ class CheckoutView(APIView):
                 )
 
             # Criar ou atualizar o token no banco de dados
-            token_obj, created = Token.objects.update_or_create(
+            token_obj, _ = Token.objects.update_or_create(
                 cliente=cliente,
                 defaults={
                     'token_id': ''.join(random.choices(string.digits, k=6)),  # Gera uma string de 6 dígitos
@@ -487,7 +512,7 @@ class CheckoutView(APIView):
             cliente.save()
 
             # Atualiza ou cria o endereço
-            endereco, created = Endereco.objects.update_or_create(
+            endereco, _ = Endereco.objects.update_or_create(
                 cep=cep,  
                 defaults={
                     'logradouro': logradouro,
@@ -642,7 +667,7 @@ class DashboardView(APIView):
 
         for acao_data in acoes:
 
-            acao_selecionada, created = AcaoSelecionada.objects.update_or_create(
+            acao_selecionada, _ = AcaoSelecionada.objects.update_or_create(
                 simbolo=acao_data['simbolo'],
                 defaults={'nome': acao_data['nome']}
             )

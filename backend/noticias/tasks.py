@@ -1,7 +1,34 @@
-from .libs import *
-from django.conf import settings
+# Bibliotecas Padrão
+import os
+import logging
+import datetime
+import gc
+from datetime import datetime, timedelta
 
-torch.cuda.empty_cache()
+# Bibliotecas de Terceiros
+import torch
+import feedparser
+import pandas as pd
+from bs4 import BeautifulSoup
+from transformers import pipeline
+from twilio.rest import Client
+from webdriver_manager.chrome import ChromeDriverManager
+from celery import Celery, chain, shared_task
+from celery.schedules import crontab
+from celery.exceptions import SoftTimeLimitExceeded
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from rest_framework_simplejwt.tokens import RefreshToken
+
+# Imports Internos (do Projeto)
+from django.conf import settings
+from django.db.models import Count
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.utils import timezone
+from .models import Token, AcaoSelecionada, Noticia, Cliente
+
 
 logger = logging.getLogger('my_custom_logger')
 logger.setLevel(logging.DEBUG)

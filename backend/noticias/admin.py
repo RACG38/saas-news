@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import *
+from .models import Cliente, Plano, AcaoSelecionada, Noticia, Token, Endereco
 
 
 admin.site.register(Cliente)
