@@ -660,11 +660,24 @@ class DashboardView(APIView):
         try:
             cliente = Cliente.objects.get(email=email)              
             
-            # Verificar se o cliente já possui uma assinatura ativa
-            existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
+            # Verificar se o cliente foi criado há menos de 7 dias
+            data_criacao = cliente.data_ultimo_pagamento  # Supondo que 'data_ultimo_pagamento' seja a data de criação
+            if data_criacao and (timezone.now().date() - data_criacao).days < 7:
+                # Criar um evento de reembolso antes de cancelar a assinatura
+                existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
+                for subscription in existing_subscriptions.data:
+                    # Obter a última fatura associada à assinatura
+                    invoice = stripe.Invoice.retrieve(subscription.latest_invoice)
+                    payment_intent = invoice.payment_intent
 
-            if existing_subscriptions.data:
-                # Cancelar a assinatura existente
+                    # Criar o reembolso para o pagamento
+                    stripe.Refund.create(payment_intent=payment_intent)
+                    
+                    # Cancelar a assinatura
+                    stripe.Subscription.delete(subscription.id)
+            else:
+                # Cancelar a assinatura existente sem reembolso
+                existing_subscriptions = stripe.Subscription.list(customer=cliente.stripe_customer_id, status='active')
                 for subscription in existing_subscriptions.data:
                     stripe.Subscription.delete(subscription.id)       
             

@@ -44,66 +44,106 @@ def delete_previous_day_news(*args, **kwargs):
     gc.collect()
 
 @shared_task(rate_limit='10/m')
-def fetch_news_for_stocks():   
+def fetch_news_for_stocks():  
 
-    acoes = AcaoSelecionada.objects.all()
-    three_days_ago = datetime.now() - timedelta(days=1)
+    acoes = AcaoSelecionada.objects.all()    
 
-    # Formata a data de três dias atrás para o formato ISO 8601 (necessário para a URL)
-    from_time = three_days_ago.replace(hour=0, minute=0, second=0, microsecond=0)
+    # RSS feed do InfoMoney
+    rss_url = "https://www.infomoney.com.br/feed/"
+
+    # Parsear o feed RSS
+    feed = feedparser.parse(rss_url)   
 
     for acao in acoes:
-        # Gera a URL com a data de três dias atrás
-        url = (f'https://newsapi.org/v2/everything?q={acao.simbolo}'
-                f'&from={from_time.isoformat()}'
-                f'&sortBy=publishedAt'
-                f'&apiKey={google_news_api_key}'
-                f'&language=pt'
-                f'&pageSize={settings.MAX_NEWS_DAILY}'
-                )
 
-        with requests.get(url) as response:
-            news_data = response.json()
+        simbolo_lower = acao.simbolo.lower()
+        nome_lower = acao.nome.lower() + " "
 
-        if news_data.get('status') == 'ok':
+        # Iterar sobre as entradas do feed RSS e salvar no banco de dados se a notícia for relevante
+        for entry in feed.entries:
 
-            # Para cada artigo, salvar o conteúdo completo ou descrição no banco de dados
-            for article in news_data.get('articles', []):
+            title = entry.title.lower()
+            summary = entry.summary.lower() if 'summary' in entry else ""
+            link = entry.link
+            published_date = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S %z").date() if 'published' in entry else ""
+                                    
+            if published_date == datetime.today().date():                
 
-                source = article.get('source', '')
-                source_name = source.get('name', '')
-                description = article.get('description', '')
-                content = article.get('content', '')  # Tentar pegar o conteúdo completo da notícia
-                url = article.get('url', '')
-                published_data = article.get('publishedAt', '')
-
-                if not description and not content:
-                    continue
-
-                # Verificar se o conteúdo contém o símbolo ou o nome da ação (case-insensitive)
-                description_lower = description.lower()
-                simbolo_lower = acao.simbolo.lower()
-                nome_lower = acao.nome.lower()
-
-                if simbolo_lower in description_lower or nome_lower in description_lower:
-                    full_text = content if content else description
-
+                # Verificar se o título ou resumo contém o símbolo ou o nome da ação (case-insensitive)
+                if simbolo_lower in title or nome_lower in title or simbolo_lower in summary or nome_lower in summary:
                     # Verificar se o texto já existe no banco de dados
-                    if not Noticia.objects.filter(acao_selecionada=acao, conteudo=full_text).exists():
-                        # Salvar o conteúdo completo da notícia
+                    if not Noticia.objects.filter(acao_selecionada=acao, conteudo=summary).exists():
                         Noticia.objects.create(
                             acao_selecionada=acao,
-                            fonte=source_name,
-                            conteudo=full_text,
-                            url=url,
-                            data_publicacao=published_data
-
+                            fonte="InfoMoney",
+                            conteudo=summary,
+                            url=link,
+                            data_publicacao=published_date
                         )
                     else:
                         logger.debug(f"Notícia já existente para {acao.simbolo}")
 
-        else:
-            logger.debug(f"Erro ao buscar notícias para {acao.simbolo}: {news_data.get('message', 'Erro desconhecido ao buscar notícias.')}")
+# @shared_task(rate_limit='10/m')
+# def fetch_news_for_stocks():   
+
+#     acoes = AcaoSelecionada.objects.all()
+#     three_days_ago = datetime.now() - timedelta(days=1)
+
+#     # Formata a data de três dias atrás para o formato ISO 8601 (necessário para a URL)
+#     from_time = three_days_ago.replace(hour=0, minute=0, second=0, microsecond=0)
+
+#     for acao in acoes:
+#         # Gera a URL com a data de três dias atrás
+#         url = (f'https://newsapi.org/v2/everything?q={acao.simbolo}'
+#                 f'&from={from_time.isoformat()}'
+#                 f'&sortBy=publishedAt'
+#                 f'&apiKey={google_news_api_key}'
+#                 f'&language=pt'
+#                 f'&pageSize={settings.MAX_NEWS_DAILY}'
+#                 )
+
+#         with requests.get(url) as response:
+#             news_data = response.json()
+
+#         if news_data.get('status') == 'ok':
+
+#             # Para cada artigo, salvar o conteúdo completo ou descrição no banco de dados
+#             for article in news_data.get('articles', []):
+
+#                 source = article.get('source', '')
+#                 source_name = source.get('name', '')
+#                 description = article.get('description', '')
+#                 content = article.get('content', '')  # Tentar pegar o conteúdo completo da notícia
+#                 url = article.get('url', '')
+#                 published_data = article.get('publishedAt', '')
+
+#                 if not description and not content:
+#                     continue
+
+#                 # Verificar se o conteúdo contém o símbolo ou o nome da ação (case-insensitive)
+#                 description_lower = description.lower()
+#                 simbolo_lower = acao.simbolo.lower()
+#                 nome_lower = acao.nome.lower()
+
+#                 if simbolo_lower in description_lower or nome_lower in description_lower:
+#                     full_text = content if content else description
+
+#                     # Verificar se o texto já existe no banco de dados
+#                     if not Noticia.objects.filter(acao_selecionada=acao, conteudo=full_text).exists():
+#                         # Salvar o conteúdo completo da notícia
+#                         Noticia.objects.create(
+#                             acao_selecionada=acao,
+#                             fonte=source_name,
+#                             conteudo=full_text,
+#                             url=url,
+#                             data_publicacao=published_data
+
+#                         )
+#                     else:
+#                         logger.debug(f"Notícia já existente para {acao.simbolo}")
+
+#         else:
+#             logger.debug(f"Erro ao buscar notícias para {acao.simbolo}: {news_data.get('message', 'Erro desconhecido ao buscar notícias.')}")
 
 @shared_task(rate_limit='5/m')
 def send_daily_news_email(*args, **kwargs):
@@ -137,7 +177,9 @@ def send_daily_news_email(*args, **kwargs):
         # Carregar todas as notícias das ações do cliente
         acoes_com_noticias = []
 
-        summarizer_pipeline = pipeline("summarization", model="facebook/bart-large-cnn", revision="main")
+        summarizer_pipeline = pipeline("summarization", model="facebook/bart-large-cnn", revision="main", device=-1)
+
+        torch.cuda.empty_cache()   
 
         # Lista de IDs de todas as notícias que foram enviadas por email
         todas_noticias_enviadas_ids = []
@@ -214,7 +256,7 @@ def send_daily_news_email(*args, **kwargs):
                 html_message=full_email_content
             )
 
-             # Se o e-mail foi enviado com sucesso, atualizar o campo data_envio_email
+            # Se o e-mail foi enviado com sucesso, atualizar o campo data_envio_email
             if email_enviado:
                 # Atualizar o campo data_envio_email das notícias que foram enviadas
                 Noticia.objects.filter(id__in=todas_noticias_enviadas_ids).update(data_envio_email=timezone.now())
@@ -254,7 +296,9 @@ def send_whatsapp_news(*args, **kwargs):
                         if noticia.conteudo and noticia.conteudo.strip():  # Garantir que não esteja vazio
 
                             # Inicializar o pipeline de sumarização usando a GPU (se disponível)
-                            summarizer_pipeline = pipeline("summarization", model="facebook/bart-large-cnn", revision="main")
+                            summarizer_pipeline = pipeline("summarization", model="facebook/bart-large-cnn", revision="main", device=-1)
+
+                            torch.cuda.empty_cache()   
 
                             try:
                                 resumo = summarizer_pipeline(noticia.conteudo, 
@@ -284,7 +328,7 @@ def send_whatsapp_news(*args, **kwargs):
                                     body=mensagem,
                                     from_='whatsapp:' + settings.TWILIO_PHONE_NUMBER,
                                     to='whatsapp:' + f'+55{cliente.whatsapp}'
-                                )                    
+                                )                                                 
 
                                 # Se a mensagem foi enviada com sucesso, atualizar o campo data_envio_whatsapp
                                 if message.status in ['queued', 'sending', 'sent', 'delivered']:

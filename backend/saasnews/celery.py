@@ -33,7 +33,8 @@ app.conf.beat_schedule = {
     
     'fetch-and-send-daily-news': {
         'task': 'noticias.tasks.fetch_and_send_news_chain',  # Referência à task encadeada
-        'schedule': crontab(minute=f'*/{settings.FETCH_AND_SEND_DAILY_NEWS_INTERVAL_MINUTE}', hour=f'{start_fetch_news}-{end_fetch_news}'),
+        'schedule': crontab(minute=f'*/{settings.FETCH_AND_SEND_DAILY_NEWS_INTERVAL_MINUTE}')
+        # 'schedule': crontab(minute=f'*/{settings.FETCH_AND_SEND_DAILY_NEWS_INTERVAL_MINUTE}', hour=f'{start_fetch_news}-{end_fetch_news}'),
     },
     'check-dividends-daily': {
         'task': 'noticias.tasks.check_and_save_dividend_news',

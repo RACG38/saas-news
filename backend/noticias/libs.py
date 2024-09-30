@@ -11,6 +11,7 @@ import stripe
 import string
 import time
 import torch
+import feedparser
 from bs4 import BeautifulSoup
 from celery import Celery, chain, shared_task
 from celery.schedules import crontab
