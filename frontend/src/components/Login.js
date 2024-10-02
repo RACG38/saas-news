@@ -113,8 +113,8 @@ const Login = () => {
                 {message && (
                     <div
                         style={{
-                            color: isError ? 'red' : '#ff6f00',
-                            border: `1px solid ${isError ? 'red' : '#ff6f00'}`,
+                            color: isError ? 'red' : 'orange',
+                            border: `1px solid ${isError ? 'red' : 'orange'}`,
                             padding: '10px',
                             marginTop: '10px',
                             borderRadius: '5px',

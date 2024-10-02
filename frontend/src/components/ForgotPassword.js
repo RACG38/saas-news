@@ -64,8 +64,8 @@ const ForgotPassword = () => {
             {message && (
                 <div
                     style={{
-                        color: isError ? 'red' : 'green',
-                        border: `1px solid ${isError ? 'red' : 'green'}`,
+                        color: isError ? 'red' : 'orange',
+                        border: `1px solid ${isError ? 'red' : 'orange'}`,
                         padding: '10px',
                         marginTop: '10px',
                         borderRadius: '5px',

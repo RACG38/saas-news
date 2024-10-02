@@ -97,7 +97,17 @@ const Register = () => {
                         });
                     }
                 }, 2000); // Redireciona após 2 segundos
-            } else {
+            } 
+            else if (data.message === 'E-mail já cadastrado') {
+                // Se o e-mail já estiver cadastrado, mostrar mensagem e redirecionar para login
+                setMessage('E-mail já cadastrado. Por favor, faça o login.');
+                setSuccess(false);
+                setLoading(false);
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000); // Redireciona para login após 2 segundos
+            }            
+            else {
                 setMessage(data.message || 'Erro ao criar conta');
                 setSuccess(false);
                 setLoading(false); // Desativa o estado de carregamento

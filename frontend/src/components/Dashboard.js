@@ -287,7 +287,7 @@ const Dashboard = () => {
                     <p><FontAwesomeIcon icon={faUser} /><strong> Olá, </strong> {userData.cliente ? userData.cliente.nome : 'N/A'}</p>
                     <p><FontAwesomeIcon icon={faCogs} /><strong> Plano atual: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.nome : 'N/A'}</p>
                     <p><strong>Ativos para selecionar: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_ativos : 'N/A'}</p>
-                    <p><strong>Notícias de cada ação selecionada: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_noticias : 'N/A'}</p>
+                    {/* <p><strong>Notícias de cada ação selecionada: </strong> {userData.cliente && userData.cliente.plano ? userData.cliente.plano.qtdade_noticias : 'N/A'}</p> */}
                 </div>
 
                 {/* Seção dos botões */}

@@ -41,8 +41,8 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-left: 30px;
-  max-height: 150px;
+  height: 100px;
+  margin-left: 30px;    
 }
 
 .nav-menu {
@@ -77,6 +77,7 @@ header {
 
 /* Hero Section */
 .hero-section {
+  position: relative;
   background-color: #1E3A5F;
   padding: 60px 0;
   width: 100vw;
@@ -86,13 +87,26 @@ header {
   background-position: center;
 }
 
+.hero-video {
+  position: absolute;
+  width: 100%;
+  height: 152%;
+  object-fit: cover; /* Ajuste proporcional, cortando se necessário */
+  z-index: -1; /* Fica atrás de todo o conteúdo */
+  opacity: 0.5;
+}
+
 .hero-content {
+  position: relative;
+  z-index: 1; /* Garante que o conteúdo fique acima do vídeo */
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between; /* Garante que o texto e a imagem fiquem lado a lado */
-  max-width: 1200px;
-  margin: 0 auto;
-  flex-wrap: nowrap; /* Impede que os elementos quebrem para a próxima linha */
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: white;
+  padding: 2rem;
 }
 
 .hero-section h2 {
@@ -112,16 +126,8 @@ header {
   text-align: left; /* Alinha o texto à esquerda */
 }
 
-.hero-image {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.hero-image img {
-  max-width: 100%;
-  height: auto;
-  width: 800px;
+.hero-text p {
+  font-weight: bold;
 }
 
 .cta-button {
@@ -189,7 +195,7 @@ header {
   background-color: #141625; /* Fundo escuro semelhante ao da imagem */
   color: #ffffff;
   padding: 100px 0;
-  text-align: center;
+  text-align: center !important;
   width: 100vw;
 }
 
@@ -262,32 +268,81 @@ header {
 
 /* Seção de Depoimentos */
 .testimonials-section {
+  padding: 60px 0;
   background-color: #1E3A5F;
-  padding: 100px 0;
-  width: 100vw; /* Estende a seção de depoimentos por toda a largura */
+  color: #f0f0f0;
+  text-align: center;
+  width: 100vw;
 }
 
-.testimonials-section h2 {
-  font-size: 36px;
-  color: #f0f0f0; /* Texto claro */
+.testimonial-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
 }
 
-.testimonial {
+.testimonial-slider {
+  overflow: hidden;
+  width: 80%; /* Ajuste o valor para controlar a largura do slider */
+}
+
+.testimonial-list {
+  display: flex;
+  transition: transform 1s ease-in-out; /* Transição suave ao deslizar */
+  width: calc(100% * 1);
+}
+
+.testimonial-box {
+  flex: 0 0 100%; /* Garante que cada depoimento ocupe 100% da largura do slider */
+  box-sizing: border-box; /* Inclui padding e bordas na largura total */
+  padding: 20px;
+  border-radius: 30px;
+  border: 2px solid #ff6f00;
+  background-color: #2b3e50; /* Fundo escuro para destacar */
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.testimonial-box p {
+  margin-bottom: 15px;
   font-style: italic;
-  margin-bottom: 20px;
-  color: #d3d3d3; /* Texto suave */
-  transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.testimonial span {
+.testimonial-box span {
   display: block;
-  margin-top: 10px;
-  color: #ff6f00; /* Destaque para o nome do usuário */
+  font-weight: bold;
+  color: #ff6f00;
 }
 
-.testimonial:hover {
-  transform: scale(1.05);
+.carousel-button {
+  background: none;
+  border: none;
   color: #ff6f00;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  z-index: 2;
+}
+
+.testimonials-section h2{
+
+  margin-bottom: 50px;
+
+}
+
+.carousel-button:hover {
+  transform: scale(1.2);
+}
+
+.prev-button {
+  margin-right: 20px;
+}
+
+.next-button {
+  margin-left: 20px;
 }
 
 /* Seção de preços */

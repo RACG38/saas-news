@@ -47,9 +47,7 @@ def delete_unassociated_stocks():
     acoes_sem_cliente = AcaoSelecionada.objects.annotate(num_clientes=Count('clientes')).filter(num_clientes=0)
     
     # Deletar as ações que não estão associadas a nenhum cliente
-    acoes_sem_cliente.delete()
-
-    gc.collect()
+    acoes_sem_cliente.delete()    
 
 @shared_task
 def delete_unassociated_tokens(*args, **kwargs):
@@ -57,18 +55,14 @@ def delete_unassociated_tokens(*args, **kwargs):
     # Consulta para encontrar ações sem clientes
     tokens_sem_cliente = Token.objects.filter(cliente__isnull=True)
     # Deletar as ações que não estão associadas a nenhum cliente
-    tokens_sem_cliente.delete()
-
-    gc.collect()
+    tokens_sem_cliente.delete()    
 
 @shared_task
 def delete_previous_day_news(*args, **kwargs):
     # Obtém a data de ontem
     yesterday = datetime.today().date() - timedelta(days=10)
     # Filtra as notícias que têm data de publicação do dia anterior e as exclui
-    Noticia.objects.filter(data_publicacao__date=yesterday).delete()
-
-    gc.collect()
+    Noticia.objects.filter(data_publicacao__date=yesterday).delete()    
 
 @shared_task(rate_limit='10/m')
 def fetch_news_for_stocks():  
@@ -83,9 +77,9 @@ def fetch_news_for_stocks():
 
     for acao in acoes:
 
-        simbolo_lower = acao.simbolo.lower()
-        nome_lower = acao.nome.lower() + " "
-
+        simbolo_acao = acao.simbolo
+        nome_empresa = acao.nome
+        
         # Iterar sobre as entradas do feed RSS e salvar no banco de dados se a notícia for relevante
         for entry in feed.entries:
 
@@ -97,7 +91,7 @@ def fetch_news_for_stocks():
             if published_date == datetime.today().date():                
 
                 # Verificar se o título ou resumo contém o símbolo ou o nome da ação (case-insensitive)
-                if simbolo_lower in title or nome_lower in title or simbolo_lower in summary or nome_lower in summary:
+                if simbolo_acao in title or nome_empresa in title or simbolo_acao in summary or nome_empresa in summary:
                     # Verificar se o texto já existe no banco de dados
                     if not Noticia.objects.filter(acao_selecionada=acao, conteudo=summary).exists():
                         Noticia.objects.create(

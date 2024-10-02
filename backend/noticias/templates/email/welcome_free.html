@@ -4,15 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bem-vindo!</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ff9800;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #ff9800;
+            text-align: center;
+        }
+        p {
+            font-size: 1.1em;
+            text-align: center;
+        }
+        .plan-details {
+            background-color: #ffffff;
+            padding: 15px; /* Reduzir padding geral */
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .plan-details ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .plan-details ul li {
+            background: #f0f2f5;
+            padding: 8px; /* Reduzir o padding interno de cada box */
+            margin-bottom: 8px; /* Reduzir o espaçamento entre os boxes */
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .feature-name {
+            flex: 1;
+        }
+        .feature-value {
+            margin-left: 10px; /* Reduzir o espaço entre a funcionalidade e o valor */
+        }
+        .feature-available {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .feature-unavailable {
+            color: #F44336;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <h1>Bem-vindo, {{ cliente.nome }}!</h1>
-    <p>Estamos felizes em ter você conosco no plano {{ plano.nome_plano }}.</p>
-    <p>Detalhes do seu plano:</p>
-    <ul>
-        <li>Valor de pagamento: R$ {{ valor_plano }}</li>        
-    </ul>
+    <p>Estamos felizes em ter você conosco no plano <strong>{{ plano.nome_plano }}</strong>.</p>
+    
+    <div class="plan-details">
+        <h2>Funcionalidades do seu plano:</h2>
+        <ul>
+            {% for feature, value in funcionalidades.items %}
+                <li>
+                    <div class="feature-name">{{ feature }}</div>
+                    {% if value == "Disponível" %}
+                        <div class="feature-value feature-available">{{ value }}</div>
+                    {% elif value == "Indisponível" %}
+                        <div class="feature-value feature-unavailable">{{ value }}</div>
+                    {% else %}
+                        <div class="feature-value feature-available">{{ value }}</div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <p>Qualquer dúvida, estamos à disposição.</p>
-    <p>Atenciosamente, <br> Sua Empresa</p>
+    <p style="text-align: center;">Atenciosamente, <br> <strong>StockHub News</strong></p>
 </body>
 </html>

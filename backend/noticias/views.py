@@ -4,7 +4,7 @@ import datetime
 import random
 import string
 import json
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # Bibliotecas de Terceiros
 import stripe
@@ -33,6 +33,22 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 logger = logging.getLogger('my_custom_logger')
 
 logger.setLevel(logging.DEBUG)
+
+def detalhes_do_plano(cliente):
+
+    plano = cliente.plano.nome_plano
+
+    funcionalidades = {
+        "Recebimento diário de notícias:": plano in ['Free', 'Basic', 'Pro'],
+        "Notícias enviadas por e-mail:": plano in ['Free', 'Basic', 'Pro'],
+        "Aviso de pagamento de dividendos por e-mail:": plano in ['Free', 'Basic', 'Pro'],
+        "Resumo em tempo real por e-mail:": plano in ['Free', 'Basic', 'Pro'],
+        "Notícias enviadas por WhatsApp:": plano in ['Basic', 'Pro'],
+        "Quantidade de ações para cadastrar:": 5 if plano == 'Free' else 10 if plano == 'Basic' else 25,
+        # "Quantidade de notícias recebidas por ação": 2 if plano == 'Free' else 3 if plano == 'Basic' else 5
+    }
+
+    return funcionalidades
 
 def enviar_email_feedback(nome, email, mensagem):
     subject = f'Feedback recebido de {nome}'
@@ -63,19 +79,28 @@ def enviar_email_free(cliente, change_plan_flag):
 
     email_template = 'email/welcome_free.html'
 
-    if change_plan_flag == True:
+    if change_plan_flag:
 
         subject = f'{cliente.nome}, a mudança do seu plano foi concluída'
 
     else:
 
-        subject = f'{cliente.nome}, bem-vindo(a) ao Plano Free!'    
+        subject = f'{cliente.nome}, bem-vindo(a) ao Plano Free!'  
+
+    funcionalidades = detalhes_do_plano(cliente)
+
+    # Atualizando valores booleanos para strings mais descritivas
+    funcionalidades_formatadas = {
+        feature: "Disponível" if value is True else "Indisponível" if value is False else value
+        for feature, value in funcionalidades.items()   }
+
 
     # Contexto para o e-mail
     email_context = {
         'cliente': cliente,
         'plano': cliente.plano,
-        'valor_plano': cliente.plano.valor,             
+        'valor_plano': cliente.plano.valor,  
+        'funcionalidades': funcionalidades_formatadas,           
     }
      
     # Renderizar a mensagem HTML
@@ -95,13 +120,15 @@ def enviar_email_free(cliente, change_plan_flag):
 def enviar_email_reset_token(cliente, token_obj):
 
     email_template = 'email/change_password.html'
-    subject = f'{cliente.nome}, esse é o seu pedido de recuperação de senha'     
+    subject = f'{cliente.nome}, esse é o seu pedido de recuperação de senha'  
+
+    data_expiracao_token = token_obj.data_expiracao - timedelta(hours=3)
 
     email_context = {
         'cliente': cliente,
         'token_id': token_obj.token_id,
         'data_criacao': token_obj.data_criacao,     
-        'data_expiracao': token_obj.data_expiracao,        
+        'data_expiracao': data_expiracao_token.strftime('%d/%m/%Y %H:%M'),        
     } 
 
     # Renderizar a mensagem HTML
@@ -122,18 +149,37 @@ def enviar_email_confirmacao(cliente, payment_method, changeplan_flag):
 
     delta = datetime.today().date() - cliente.data_ultimo_pagamento
 
-    if changeplan_flag == True:
+    if changeplan_flag:
+
         email_template = 'email/change_plan.html'
         subject = f'{cliente.nome}, a mudança do seu plano foi concluída'
 
-
-    elif delta.days < 1:        
-        email_template = 'email/welcome.html'
-        subject = f'{cliente.nome}, bem-vindo(a) ao Nosso Serviço!'
+        numero_cartao = payment_method.data[0].card.last4
+        data_vencimento_cartao = f"{payment_method.data[0].card.exp_month:02d}/{str(payment_method.data[0].card.exp_year)[-2:]}"        
 
     else:
+
+        numero_cartao = payment_method.get('card').get('last4')
+        data_vencimento_cartao = f"{payment_method.get('card').get('exp_month'):02d}/{str(payment_method.get('card').get('exp_year'))[-2:]}"
+
+
+    if delta.days < 1:  
+
+        email_template = 'email/welcome.html'
+        subject = f'{cliente.nome}, bem-vindo(a) ao Nosso Serviço!'
+        
+    else:
+
         email_template = 'email/renewal.html'
         subject = f'{cliente.nome}, sua renovação do Plano {cliente.plano} foi efetuada'
+
+    funcionalidades = detalhes_do_plano(cliente)
+
+    # Atualizando valores booleanos para strings mais descritivas
+    funcionalidades_formatadas = {
+        feature: "Disponível" if value is True else "Indisponível" if value is False else value
+        for feature, value in funcionalidades.items()   }
+
 
     # Contexto para o e-mail
     email_context = {
@@ -141,8 +187,9 @@ def enviar_email_confirmacao(cliente, payment_method, changeplan_flag):
         'plano': cliente.plano,
         'valor_plano': cliente.plano.valor,  
         'data_renovacao_pagamento': (timezone.now().date() + timezone.timedelta(days=30)).strftime('%m/%Y'),
-        'numero_cartao': payment_method.get('card').get('last4'),
-        'data_vencimento':  f"{payment_method.get('card').get('exp_month'):02d}/{str(payment_method.get('card').get('exp_year'))[-2:]}",  # MM/YY
+        'numero_cartao': numero_cartao,
+        'data_vencimento':  data_vencimento_cartao,
+        'funcionalidades': funcionalidades_formatadas
     }   
 
     
@@ -177,7 +224,9 @@ class VerifyTokenView(APIView):
 
     def post(self, request):
 
-        token = request.data.get('token') 
+        token = request.data.get('token')
+
+        logger.debug(f"TOKEN --> {token}")
        
         try:
             
@@ -276,11 +325,10 @@ class LoginView(APIView):
             return Response({"message": "Email ou senha incorretos."}, status=status.HTTP_401_UNAUTHORIZED)
         
 class RegisterView(APIView):
-    
+
     def post(self, request):
 
         try:
-
             plan_id = request.data.get('plan_id')                       
             action = request.data.get('action')
             email = request.data.get('email')                               
@@ -288,7 +336,6 @@ class RegisterView(APIView):
             whatsapp = request.data.get('whatsapp')            
             password = request.data.get('password')                 
             change_plan = request.data.get('change_plan') 
-                 
 
             # Tentar recuperar o cliente do banco de dados
             cliente, created = Cliente.objects.get_or_create(
@@ -298,50 +345,47 @@ class RegisterView(APIView):
                     'whatsapp': whatsapp,
                     'password': make_password(password),
                     'data_ultimo_pagamento': timezone.now(),                                        
-                    
                 }
             )     
-                   
 
-            if created: # Verifica se é primeiro acesso
+            # Verifica se o cliente já existe e não é uma criação nova
+            if not created:
+                return Response({
+                    'success': False,
+                    'message': "E-mail já cadastrado",
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-                cliente.tickers.clear() # Inicializa os tickers como um campo vazio
+            # Se foi criado um novo cliente
+            cliente.tickers.clear() # Inicializa os tickers como um campo vazio
 
-                # Tentar recuperar o cliente pelo email
-                customer_stripe = stripe.Customer.list(email=email)
-                
-                if customer_stripe.data:
-                    
-                    customer = customer_stripe.data[0]
+            # Tentar recuperar o cliente pelo email no Stripe
+            customer_stripe = stripe.Customer.list(email=email)
+            
+            if customer_stripe.data:
+                customer = customer_stripe.data[0]
+            else:
+                # Criar o cliente no Stripe
+                customer = stripe.Customer.create(
+                    email=email,
+                    name=nome,
+                    description='Cliente registrado para pagamentos recorrentes',
+                    metadata={
+                        'whatsapp': whatsapp,
+                    }
+                )   
 
-                else:
-
-                    # Criar o cliente no Stripe
-                    customer = stripe.Customer.create(
-                        email=email,
-                        name=nome,
-                        description='Cliente registrado para pagamentos recorrentes',
-                        metadata={
-                            'whatsapp': whatsapp,
-                        }
-                    )   
-
-            if cliente: # Verifica se o cliente existe no banco de dados
-
+            # Continuar com o código para criar ou atualizar os detalhes do cliente e plano...
+            if cliente:
                 if action == 'get_current_plan':    
-
                     return JsonResponse({
                         'plan_id': cliente.plano.id,                
                     })                                 
-
 
                 customer = stripe.Customer.list(email=email).data[0] # Verifica se já existe um cadastro do cliente no Stripe
                 cliente.stripe_customer_id = customer.id # Atualizar o cliente local com o ID do Stripe
                 cliente.save()      
 
-                
                 if plan_id == 1:                    
-
                     # Criar ou atualizar o token de redefinição de senha no banco de dados
                     token_obj, created = Token.objects.update_or_create(
                         cliente=cliente,
@@ -355,38 +399,31 @@ class RegisterView(APIView):
                     # Atualiza o plano do cliente para o Free
                     cliente, _ = Cliente.objects.update_or_create(
                         email=email,
-                            defaults={
-                                'plano': get_object_or_404(Plano, id=plan_id),
-                                'data_ultimo_pagamento': timezone.now(),
-                                'token': token_obj
-                                
-                                }                      
-
+                        defaults={
+                            'plano': get_object_or_404(Plano, id=plan_id),
+                            'data_ultimo_pagamento': timezone.now(),
+                            'token': token_obj
+                        }                      
                     )                        
 
                     # Verifica se o cliente já possui uma assinatura ativa. Se tiver, irá ser cancelada
                     existing_subscriptions = stripe.Subscription.list(customer=customer.id, status='active')
                     
                     if existing_subscriptions.data:
-                        
                         for subscription in existing_subscriptions.data:
                             stripe.Subscription.delete(subscription.id) # Cancelar a assinatura existente
 
                     enviar_email_free(cliente, change_plan)
                 
                     return Response({
-                    'success': True,
-                    'message': "Cliente cadastrado no plano Free",
-                
-                }, status=status.HTTP_200_OK)  
+                        'success': True,
+                        'message': "Cliente cadastrado no plano Free",
+                    }, status=status.HTTP_200_OK)  
                 else:
-
                     return Response({
                         'success': True,
                         'message': "Cliente cadastrado banco de dados",
-
                     }, status=status.HTTP_200_OK)         
-                                 
 
         except ValidationError as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -395,7 +432,7 @@ class RegisterView(APIView):
             return Response({"message": f"Erro no Stripe: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
-            return Response({"message": f"Erro interno do servidor: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)            
+            return Response({"message": f"Erro interno do servidor: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CheckoutView(APIView):
 
@@ -579,9 +616,18 @@ class CheckoutView(APIView):
                 expand=['latest_invoice.payment_intent'],
             )
 
-            cliente.refresh_from_db()
+            cliente.refresh_from_db() 
 
-            # Enviar e-mail de confirmação
+            if change_plan:
+
+                customer = stripe.Customer.list(email=email).data[0]    
+
+                # Busca os métodos de pagamento do cliente no Stripe
+                payment_method = stripe.PaymentMethod.list(
+                    customer=customer.id,
+                    type="card"
+                )
+          
             enviar_email_confirmacao(cliente, payment_method, change_plan)
 
             return Response({

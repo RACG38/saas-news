@@ -4,18 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Renovação Concluída</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #ff9800;
+            text-align: center;
+        }
+        p {
+            font-size: 1.1em;
+            text-align: center;
+        }
+        .payment-details,
+        .plan-details {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background: #f0f2f5;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .feature-name {
+            flex: 1;
+        }
+        .feature-value {
+            margin-left: 10px;
+        }
+        .feature-available {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .feature-unavailable {
+            color: #F44336;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <h1>Olá, {{ cliente.nome }}!</h1>
-    <p>Sua assinatura do plano {{ plano.nome_plano }} foi renovada com sucesso.</p>
-    <p>Detalhes do pagamento:</p>
-    <ul>
-        <li>Valor: R$ {{ plano.valor }}</li>
-        <li>Data da renovação do seu plano: {{ data_renovacao_pagamento }}</li>
-        <li>Cartão utilizado: **** **** **** {{ numero_cartao }}</li>
-        <li>Validade do cartão: {{ data_vencimento }}</li>
-    </ul>
+    <p>Sua assinatura do plano <strong>{{ plano.nome_plano }}</strong> foi renovada com sucesso.</p>
+    
+    <div class="payment-details">
+        <h2>Detalhes do pagamento:</h2>
+        <ul>
+            <li>Valor: <span>R$ {{ plano.valor }}</span></li>
+            <li>Data da renovação do seu plano: <span>{{ data_renovacao_pagamento }}</span></li>
+            <li>Cartão utilizado: <span>**** **** **** {{ numero_cartao }}</span></li>
+            <li>Validade do cartão: <span>{{ data_vencimento }}</span></li>
+        </ul>
+    </div>
+    
+    <div class="plan-details">
+        <h2>Funcionalidades do seu plano:</h2>
+        <ul>
+            {% for feature, value in funcionalidades.items %}
+                <li>
+                    <div class="feature-name">{{ feature }}</div>
+                    {% if value == "Disponível" %}
+                        <div class="feature-value feature-available">{{ value }}</div>
+                    {% elif value == "Indisponível" %}
+                        <div class="feature-value feature-unavailable">{{ value }}</div>
+                    {% else %}
+                        <div class="feature-value feature-available">{{ value }}</div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <p>Qualquer dúvida, estamos à disposição.</p>
-    <p>Atenciosamente, <br> Sua Empresa</p>
+    <p style="text-align: center;">Atenciosamente, <br> <strong>StockHub News</strong></p>
 </body>
 </html>

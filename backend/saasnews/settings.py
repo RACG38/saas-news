@@ -16,7 +16,7 @@ TWILIO_PHONE_NUMBER = '+14155238886'
 DOMAIN_NEWS = {"infomoney.com.br", "suno.com.br", "uol.com.br", "dinheirama.com.br"}
 
 # Variáveis de tempo para execução das funções
-MAX_NEWS_DAILY = 5 # Quantidade máxima de notícias diárias por ação
+#MAX_NEWS_DAILY = 5 # Quantidade máxima de notícias diárias por ação
 START_FETCH_NEWS = 23 # Inicio do pregão
 END_FETCH_NEWS =  0 # Horário após o fim do pregão
 

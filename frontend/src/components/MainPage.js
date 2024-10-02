@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faTimesCircle, faChevronDown, faChevronUp, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import '../styles/MainPage.css'; // Certifique-se de que o arquivo CSS está corretamente importado
 
 const MainPage = () => {
@@ -13,6 +13,55 @@ const MainPage = () => {
  
   const pricingRef = useRef(null);  // Referência para a seção de planos
   const [expandedQuestion, setExpandedQuestion] = useState(null);  // Controle para expandir respostas
+
+  const testimonials = [
+    {
+        text: "Desde que comecei a usar o StockHub News, nunca mais perdi informações importantes sobre minhas ações! Antes, eu precisava verificar várias fontes diferentes e muitas vezes acabava recebendo as notícias atrasadas. Agora, recebo tudo em tempo real diretamente no meu WhatsApp, o que me permite agir rapidamente. Estou extremamente satisfeito com o serviço!",
+        author: "— João, Investidor Pro",
+    },
+    {
+        text: "As notificações em tempo real me ajudam a tomar decisões mais rápidas. Simplesmente incrível! Eu costumava perder oportunidades porque não conseguia acompanhar o volume de informações que precisava analisar. O StockHub News faz todo o trabalho pesado e me envia um resumo claro e objetivo das notícias mais relevantes sobre as ações que acompanho. Recomendo muito, especialmente para quem, como eu, não tem tempo de sobra.",
+        author: "— Maria, Investidora Basic",
+    },
+    {
+        text: "O StockHub News é a melhor ferramenta que já usei para acompanhar minhas ações. Receber informações sobre dividendos e eventos relevantes de forma tão direta faz toda a diferença na minha estratégia de investimento. A simplicidade e a precisão das notificações me deram uma nova perspectiva sobre como monitorar meu portfólio. Sem dúvida, vale a pena!",
+        author: "— Carlos, Investidor Free",
+    },
+    {
+        text: "Eu estava buscando uma maneira mais eficiente de acompanhar as minhas ações, pois ficava perdido em meio a tantas informações dispersas. Com o StockHub News, eu finalmente consegui centralizar todas as atualizações e notícias mais relevantes em um só lugar. Além disso, a equipe de suporte é fantástica, sempre pronta para ajudar. Estou muito satisfeito!",
+        author: "— Ana, Investidora Pro",
+    },
+    {
+        text: "Sou novo no mundo dos investimentos e não sabia por onde começar. O StockHub News tem sido um verdadeiro guia para mim, enviando notícias que realmente importam sobre as ações que escolhi. Graças às notificações, eu me sinto muito mais confiante para tomar decisões informadas e estou aprendendo cada vez mais. Excelente serviço!",
+        author: "— Rafael, Investidor Free",
+    },
+    {
+        text: "O que mais gosto no StockHub News é a praticidade. Recebo alertas personalizados sobre os eventos que impactam diretamente as minhas ações. Isso me permite antecipar movimentos do mercado e adaptar minha estratégia de forma eficiente. Não sei como faria isso sem essa ferramenta. Para qualquer investidor que quer estar bem informado, é indispensável.",
+        author: "— Beatriz, Investidora Basic",
+    }
+];
+
+
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+
+  const handleNextTestimonial = () => {
+    setCurrentTestimonial((prevIndex) => (prevIndex + 1) % testimonials.length);
+  };
+
+  const handlePrevTestimonial = () => {
+    setCurrentTestimonial((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
+  };
+
+  // useEffect para rodar o carrossel automaticamente a cada 3 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleNextTestimonial();
+    }, 10000); 
+
+    return () => {
+      clearInterval(interval); // Limpa o intervalo quando o componente é desmontado
+    };
+  }, [currentTestimonial]);
 
   const handleCheckoutClick = (selectedPlanName) => {
     if (change_plan && selectedPlanName === 'Free' && plan_id !== 1) {
@@ -60,9 +109,8 @@ const MainPage = () => {
       <header>
         <div className="header-container">
           <div className="logo-title-container">
-            {/* Caminho relativo para a imagem na pasta public */}
             <h1>StockHub News</h1>
-            <img src="/stockhubnews_logo.png" alt="Logo StockHub News" className="logo" />            
+              {/* <img src="/stockhubnews_logo.png" alt="Logo StockHub News" className="logo" />             */}
           </div>
           <nav>
             <ul className="nav-menu">
@@ -72,24 +120,24 @@ const MainPage = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="container">
+      <section className="hero-section">        
           <div className="hero-content">
+            {/* Vídeo como fundo da Hero Section */}
+            <video
+              className="hero-video"
+              src="/stock_market.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+            ></video>
             <div className="hero-text">
               <h2>Mantenha-se à frente no mercado de ações!</h2>
               <p>Receba um resumo das principais notícias das suas ações em tempo real diretamente no seu email e WhatsApp. Não perca nenhuma oportunidade!</p>
               <button className="cta-button" onClick={scrollToPricing}>Experimente Grátis</button>
             </div>
-            <div className="hero-image">
-              {/* Caminho relativo para a imagem na pasta public */}
-              <img src="/cellphone_message.png" alt="Notificações de celular" />
-            </div>
-          </div>
-        </div>
+          </div>        
       </section>
-
-
       {/* Seção de Benefícios */}
       <section className="benefits-section">
         <div className="container">
@@ -135,17 +183,21 @@ const MainPage = () => {
       </section>
 
 
-      {/* Seção de Depoimentos */}
+      {/* Seção de Depoimentos com Carrossel */}
       <section className="testimonials-section">
         <div className="container">
           <h2>O que nossos usuários dizem</h2>
-          <div className="testimonial">
-            <p>"Desde que comecei a usar o News APP, nunca mais perdi informações importantes sobre minhas ações!"</p>
-            <span>— João, Investidor Pro</span>
-          </div>
-          <div className="testimonial">
-            <p>"As notificações em tempo real me ajudam a tomar decisões mais rápidas. Simplesmente incrível!"</p>
-            <span>— Maria, Investidora Basic</span>
+          <div className="testimonial-carousel">
+            <div className="testimonial-slider">
+              <div className="testimonial-list" style={{ transform: `translateX(-${currentTestimonial * 100}%)` }}>
+                {testimonials.map((testimonial, index) => (
+                  <div key={index} className="testimonial-box">
+                    <p>"{testimonial.text}"</p>
+                    <span>{testimonial.author}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -189,17 +241,17 @@ const MainPage = () => {
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
               <tr>
-                <td>Notícias enviadas por WhatsApp</td>
+                <td>Notícias recebidas por WhatsApp</td>
                 <td>---</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td>Recebimento de um resumo com as principais notícias das suas ações em tempo real pelo whatsapp</td>
                 <td>---</td>
                 <td>---</td>
                 <td><FontAwesomeIcon icon={faCheckCircle} className="check-icon" /></td>
-              </tr>              
+              </tr>               */}
               {/* <tr>
                 <td>Análise de sentimento das suas ações</td>
                 <td>---</td>
@@ -212,12 +264,12 @@ const MainPage = () => {
                 <td>10</td>
                 <td>25</td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td>Quantidade de notícias recebidas</td>
                 <td>2</td>
                 <td>3</td>
                 <td>5</td>
-              </tr>
+              </tr> */}
               <tr>
               <td><strong>ESCOLHA O SEU PLANO</strong></td>
                 <td>
